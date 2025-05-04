@@ -1,110 +1,64 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Clientes</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-        table {
-            width: 80%;
-            margin: 50px auto;
-            border-collapse: collapse;
-        }
-        th, td {
-            border: 1px solid #999;
-            padding: 10px;
-            text-align: center;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-
-        .estado-btn {
-            padding: 8px 15px;
-            border: none;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-
-        .no-visitado {
-            background-color: red;
-        }
-
-        .visitado {
-            background-color: green;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Clientes</title>
+  <style>
+    table {
+      width: 80%;
+      margin: 50px auto;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+    .estado-btn {
+      padding: 8px 15px;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .visitado {
+      background-color: green;
+    }
+    .no-visitado {
+      background-color: red;
+    }
+  </style>
 </head>
 <body>
 
-    <h2 style="text-align: center;">Lista de Clientes</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Nombre</th>
-                <th>Código</th>
-                <th>Ruta</th>
-                <th>Estado de Visita</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Juan Pérez</td>
-                <td>001</td>
-                <td>Ruta A</td>
-                <td><button class="estado-btn" onclick="cambiarEstado(this, '001')">Cargando...</button></td>
-            </tr>
-            <tr>
-                <td>María López</td>
-                <td>002</td>
-                <td>Ruta B</td>
-                <td><button class="estado-btn" onclick="cambiarEstado(this, '002')">Cargando...</button></td>
-            </tr>
-            <tr>
-                <td>Carlos Ruiz</td>
-                <td>003</td>
-                <td>Ruta C</td>
-                <td><button class="estado-btn" onclick="cambiarEstado(this, '003')">Cargando...</button></td>
-            </tr>
-        </tbody>
-    </table>
+  <h2 style="text-align:center;">Clientes</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Código</th>
+        <th>Ruta</th>
+        <th>Estado</th>
+      </tr>
+    </thead>
+    <tbody id="clientes-body">
+      <!-- Los clientes se cargarán aquí -->
+    </tbody>
+  </table>
 
-    <script>
-        // Cargar estados guardados
-        document.addEventListener("DOMContentLoaded", () => {
-            const botones = document.querySelectorAll(".estado-btn");
-            botones.forEach((boton, index) => {
-                const codigo = ['001', '002', '003'][index]; // puedes hacer esto más dinámico si agregas más clientes
-                const estadoGuardado = localStorage.getItem('cliente_' + codigo);
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
-                if (estadoGuardado === "visitado") {
-                    boton.classList.add("visitado");
-                    boton.textContent = "Visitado";
-                } else {
-                    boton.classList.add("no-visitado");
-                    boton.textContent = "No visitado";
-                }
-            });
-        });
-
-        function cambiarEstado(boton, codigo) {
-            if (boton.classList.contains("no-visitado")) {
-                boton.classList.remove("no-visitado");
-                boton.classList.add("visitado");
-                boton.textContent = "Visitado";
-                localStorage.setItem('cliente_' + codigo, "visitado");
-            } else {
-                boton.classList.remove("visitado");
-                boton.classList.add("no-visitado");
-                boton.textContent = "No visitado";
-                localStorage.setItem('cliente_' + codigo, "no-visitado");
-            }
-        }
-    </script>
-
-</body>
-</html>
+  <script>
+    // 🔥 Configuración real de tu Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyBMUS3oqZOtUsuxFsVRjwXRA7HKA2pdnKY",
+      authDomain: "iceperu-5613a.firebaseapp.com",
+      databaseURL: "https://iceperu-5613a-default-rtdb.firebaseio.com",
+      projectId: "iceperu-5613a",
+      storageBucket: "iceperu-5613a.firebasestorage.app",
+      messagingSenderId: "160752506128",
+      appId: "1:160752506128:web:a2781301bd763db4388195",
+      measurementId: "G-WD
