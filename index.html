@@ -2,34 +2,53 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Lista de Usuarios</title>
+    <title>Clientes</title>
     <style>
         body {
             font-family: Arial, sans-serif;
         }
         table {
-            width: 60%;
+            width: 80%;
             margin: 50px auto;
             border-collapse: collapse;
         }
         th, td {
             border: 1px solid #999;
             padding: 10px;
-            text-align: left;
+            text-align: center;
         }
         th {
             background-color: #f2f2f2;
         }
+
+        .estado-btn {
+            padding: 8px 15px;
+            border: none;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .no-visitado {
+            background-color: red;
+        }
+
+        .visitado {
+            background-color: green;
+        }
     </style>
 </head>
 <body>
-    <h2 style="text-align: center;">Lista de Usuarios</h2>
+
+    <h2 style="text-align: center;">Lista de Clientes</h2>
     <table>
         <thead>
             <tr>
-                <th>Jaime coello marina</th>
-                <th>8050726</th>
-                <th>08</th>
+                <th>Nombre</th>
+                <th>Código</th>
+                <th>Ruta</th>
+                <th>Estado de Visita</th>
             </tr>
         </thead>
         <tbody>
@@ -37,18 +56,36 @@
                 <td>Juan Pérez</td>
                 <td>001</td>
                 <td>Ruta A</td>
+                <td><button class="estado-btn no-visitado" onclick="cambiarEstado(this)">No visitado</button></td>
             </tr>
             <tr>
                 <td>María López</td>
                 <td>002</td>
                 <td>Ruta B</td>
+                <td><button class="estado-btn no-visitado" onclick="cambiarEstado(this)">No visitado</button></td>
             </tr>
             <tr>
                 <td>Carlos Ruiz</td>
                 <td>003</td>
                 <td>Ruta C</td>
+                <td><button class="estado-btn no-visitado" onclick="cambiarEstado(this)">No visitado</button></td>
             </tr>
         </tbody>
     </table>
+
+    <script>
+        function cambiarEstado(boton) {
+            if (boton.classList.contains("no-visitado")) {
+                boton.classList.remove("no-visitado");
+                boton.classList.add("visitado");
+                boton.textContent = "Visitado";
+            } else {
+                boton.classList.remove("visitado");
+                boton.classList.add("no-visitado");
+                boton.textContent = "No visitado";
+            }
+        }
+    </script>
+
 </body>
 </html>
