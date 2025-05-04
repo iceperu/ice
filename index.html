@@ -61,4 +61,56 @@
       storageBucket: "iceperu-5613a.firebasestorage.app",
       messagingSenderId: "160752506128",
       appId: "1:160752506128:web:a2781301bd763db4388195",
-      measurementId: "G-WD
+      measurementId: "G-WD516HZ80N"
+    };
+
+    // Inicializa Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Lista de clientes
+    const clientes = [
+      { nombre: "Juan Pérez", codigo: "001", ruta: "Ruta A" },
+      { nombre: "María López", codigo: "002", ruta: "Ruta B" },
+      { nombre: "Carlos Ruiz", codigo: "003", ruta: "Ruta C" }
+    ];
+
+    const tbody = document.getElementById('clientes-body');
+
+    // Cargar clientes desde Firebase y construir la tabla
+    clientes.forEach(cliente => {
+      const tr = document.createElement('tr');
+
+      tr.innerHTML = `
+        <td>${cliente.nombre}</td>
+        <td>${cliente.codigo}</td>
+        <td>${cliente.ruta}</td>
+        <td>
+          <button id="btn-${cliente.codigo}" class="estado-btn">Cargando...</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+
+      const btn = document.getElementById(`btn-${cliente.codigo}`);
+
+      // Escuchar cambios en Firebase en tiempo real
+      const ref = db.ref('clientes/' + cliente.codigo);
+      ref.on('value', snapshot => {
+        const estado = snapshot.val() || 'no-visitado';
+        btn.textContent = estado === 'visitado' ? 'Visitado' : 'No visitado';
+        btn.className = 'estado-btn ' + estado;
+      });
+
+      // Cambiar estado al hacer clic
+      btn.addEventListener('click', () => {
+        ref.once('value').then(snapshot => {
+          const estadoActual = snapshot.val();
+          const nuevoEstado = estadoActual === 'visitado' ? 'no-visitado' : 'visitado';
+          ref.set(nuevoEstado);
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>
