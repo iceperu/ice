@@ -38,6 +38,27 @@
       font-size: 14px;
       padding: 4px;
     }
+    .password-modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 20px;
+      background-color: rgba(0, 0, 0, 0.7);
+      color: white;
+      border-radius: 10px;
+    }
+    .password-modal input {
+      padding: 10px;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+    .password-modal button {
+      padding: 8px 16px;
+      font-size: 16px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -71,6 +92,14 @@
       <!-- Los clientes se cargarán aquí -->
     </tbody>
   </table>
+
+  <!-- Modal para contraseña -->
+  <div id="password-modal" class="password-modal">
+    <h3>Introduce la contraseña</h3>
+    <input type="password" id="password-input" placeholder="Contraseña" />
+    <button id="submit-password">Aceptar</button>
+    <button id="cancel-password">Cancelar</button>
+  </div>
 
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -115,9 +144,21 @@
       }
     ];
 
+    const passwordMap = {
+      '07': '1234',
+      '08': '5678',
+      '09': '9101',
+      '10': '1121',
+      '11': '3141'
+    };
+
     const tbody = document.getElementById('clientes-body');
     const buscador = document.getElementById('buscador');
     const datalist = document.getElementById('sugerencias');
+    const passwordModal = document.getElementById('password-modal');
+    const passwordInput = document.getElementById('password-input');
+    const submitPassword = document.getElementById('submit-password');
+    const cancelPassword = document.getElementById('cancel-password');
 
     function renderClientes(filtrados) {
       tbody.innerHTML = '';
@@ -139,7 +180,6 @@
         `;
         tbody.appendChild(tr);
 
-        // Estado
         const btn = document.getElementById(`btn-${cliente.codigo}`);
         const estadoRef = db.ref('clientes/' + cliente.codigo + '/estado');
 
@@ -150,20 +190,34 @@
         });
 
         btn.addEventListener('click', () => {
-          estadoRef.once('value').then(snapshot => {
-            const estadoActual = snapshot.val();
-            const nuevoEstado = estadoActual === 'visitado' ? 'no-visitado' : 'visitado';
-            estadoRef.set(nuevoEstado);
-          });
+          // Mostrar el modal para ingresar la contraseña
+          const ruta = cliente.ruta;
+          passwordModal.style.display = 'block';
+          submitPassword.onclick = () => {
+            const enteredPassword = passwordInput.value;
+            if (enteredPassword === passwordMap[ruta]) {
+              // Contraseña correcta, cambiar el estado
+              estadoRef.once('value').then(snapshot => {
+                const estadoActual = snapshot.val();
+                const nuevoEstado = estadoActual === 'visitado' ? 'no-visitado' : 'visitado';
+                estadoRef.set(nuevoEstado);
+              });
+              passwordModal.style.display = 'none'; // Cerrar modal
+            } else {
+              alert('Contraseña incorrecta');
+            }
+          };
+
+          cancelPassword.onclick = () => {
+            passwordModal.style.display = 'none'; // Cerrar modal sin hacer nada
+          };
         });
 
-        // Requerimientos (editable)
         const reqCell = document.getElementById(`req-${cliente.codigo}`);
         const editIcon = reqCell.querySelector('.edit-icon');
         const reqText = reqCell.querySelector('.req-text');
         const reqRef = db.ref('clientes/' + cliente.codigo + '/requerimientos');
 
-        // Escuchar cambios desde Firebase
         reqRef.on('value', snapshot => {
           reqText.textContent = snapshot.val() || "Sin requerimientos";
         });
@@ -186,13 +240,12 @@
               <span class="req-text">${nuevoTexto || "Sin requerimientos"}</span>
               <span class="edit-icon" title="Editar">&#9998;</span>
             `;
-            renderClientes(filtrados); // vuelve a cargar íconos
+            renderClientes(filtrados);
           });
         });
       });
     }
 
-    // Mostrar todos al inicio
     renderClientes(todosLosClientes);
 
     function actualizarSugerencias(input) {
@@ -227,3 +280,4 @@
 
 </body>
 </html>
+
