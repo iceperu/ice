@@ -193,7 +193,7 @@
           <td>${cliente.nombre}</td>
           <td>${cliente.codigo}</td>
           <td>${cliente.ruta}</td>
-          <td><a href="${cliente.ubicacion}" target="_blank">Ver mapa</a></td>
+          <td>${cliente.ubicacion === "falta" ? "Falta" : `<a href="${cliente.ubicacion}" target="_blank">Ver mapa</a>`}</td>
           <td id="req-${cliente.codigo}" class="edit-cell">
             <span class="req-text">${cliente.requerimientos || "Sin requerimientos"}</span>
             <span class="edit-icon" title="Editar">&#9998;</span>
