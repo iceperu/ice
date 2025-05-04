@@ -76,6 +76,28 @@
       font-size: 16px;
       cursor: pointer;
     }
+
+    /* Botones de agregar y eliminar */
+    .action-buttons {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .action-btn {
+      padding: 10px 20px;
+      margin: 10px;
+      background-color: #4CAF50;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .action-btn.delete {
+      background-color: red;
+    }
+
   </style>
 </head>
 <body>
@@ -109,6 +131,12 @@
       <!-- Los clientes se cargarán aquí -->
     </tbody>
   </table>
+
+  <!-- Botones de acción -->
+  <div class="action-buttons">
+    <button class="action-btn" id="add-all">Agregar Todos</button>
+    <button class="action-btn delete" id="delete-all">Eliminar Todos</button>
+  </div>
 
   <!-- Modal para contraseña -->
   <div id="password-modal" class="password-modal">
@@ -300,6 +328,21 @@
 
       renderClientes(filtrados);
     });
+
+    // Función para agregar todos los datos
+    document.getElementById('add-all').addEventListener('click', () => {
+      const clientesRef = db.ref('clientes');
+      clientesRef.set(todosLosClientes); // Agregar todos los clientes a la base de datos
+      alert('Clientes agregados exitosamente.');
+    });
+
+    // Función para eliminar todos los datos
+    document.getElementById('delete-all').addEventListener('click', () => {
+      const clientesRef = db.ref('clientes');
+      clientesRef.remove(); // Eliminar todos los clientes de la base de datos
+      alert('Todos los clientes han sido eliminados.');
+    });
+
   </script>
 
 </body>
