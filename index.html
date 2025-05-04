@@ -15,8 +15,8 @@
       text-align: center;
     }
 
-    /* Fondo verde para las celdas de las columnas */
-    th, td.verde {
+    /* Fondo verde para los encabezados */
+    th {
       background-color: #a8e6a6; /* Verde claro */
     }
 
@@ -34,23 +34,27 @@
     .no-visitado {
       background-color: red;
     }
+
+    /* Lápices alineados a la derecha */
+    .edit-cell {
+      position: relative; /* Para poder mover el icono */
+    }
     .edit-icon {
       cursor: pointer;
       margin-left: 5px;
       color: blue;
       position: absolute;
-      right: 10px;
+      right: 10px; /* Posicionar a la derecha */
       top: 50%;
       transform: translateY(-50%);
     }
-    .edit-cell {
-      position: relative; /* Para que el icono de edición se pueda mover */
-    }
+
     .edit-input {
       width: 90%;
       font-size: 14px;
       padding: 4px;
     }
+
     .password-modal {
       display: none;
       position: fixed;
@@ -76,7 +80,7 @@
 </head>
 <body>
 
-  <h2 style="text-align:center;">Clientes ICE AYACUCHO</h2>
+  <h2 style="text-align:center;">Clientes</h2>
 
   <!-- 🔍 Buscador -->
   <div style="text-align: center; margin-top: 30px;">
@@ -93,12 +97,12 @@
   <table>
     <thead>
       <tr>
-        <th class="verde">Nombre</th>
-        <th class="verde">Código</th>
-        <th class="verde">Ruta</th>
-        <th class="verde">Ubicación</th>
-        <th class="verde">Requerimientos</th>
-        <th class="verde">Estado</th>
+        <th>Nombre</th>
+        <th>Código</th>
+        <th>Ruta</th>
+        <th>Ubicación</th>
+        <th>Requerimientos</th>
+        <th>Estado</th>
       </tr>
     </thead>
     <tbody id="clientes-body">
@@ -179,15 +183,15 @@
         const tr = document.createElement('tr');
 
         tr.innerHTML = `
-          <td class="verde">${cliente.nombre}</td>
-          <td class="verde">${cliente.codigo}</td>
-          <td class="verde">${cliente.ruta}</td>
-          <td class="verde"><a href="${cliente.ubicacion}" target="_blank">Ver mapa</a></td>
-          <td id="req-${cliente.codigo}" class="verde">
+          <td>${cliente.nombre}</td>
+          <td>${cliente.codigo}</td>
+          <td>${cliente.ruta}</td>
+          <td><a href="${cliente.ubicacion}" target="_blank">Ver mapa</a></td>
+          <td id="req-${cliente.codigo}" class="edit-cell">
             <span class="req-text">${cliente.requerimientos || "Sin requerimientos"}</span>
             <span class="edit-icon" title="Editar">&#9998;</span>
           </td>
-          <td class="verde">
+          <td>
             <button id="btn-${cliente.codigo}" class="estado-btn">Cargando...</button>
           </td>
         `;
