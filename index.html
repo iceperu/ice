@@ -33,6 +33,19 @@
 <body>
 
   <h2 style="text-align:center;">Clientes</h2>
+
+  <!-- 🔍 Buscador con autocompletado -->
+  <div style="text-align: center; margin-top: 30px;">
+    <input
+      type="text"
+      id="buscador"
+      placeholder="Buscar por nombre, código o ruta..."
+      style="width: 50%; padding: 10px; font-size: 16px;"
+      list="sugerencias"
+    />
+    <datalist id="sugerencias"></datalist>
+  </div>
+
   <table>
     <thead>
       <tr>
@@ -52,7 +65,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
   <script>
-    // 🔥 Configuración real de tu Firebase
+    // 🔥 Configuración de Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyBMUS3oqZOtUsuxFsVRjwXRA7HKA2pdnKY",
       authDomain: "iceperu-5613a.firebaseapp.com",
@@ -68,49 +81,85 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // Lista de clientes
-    const clientes = [
+    // Clientes
+    const todosLosClientes = [
       { nombre: "jaime coelle marina", codigo: "8050726", ruta: "08" },
       { nombre: "ore quispe mirian", codigo: "616326", ruta: "08" },
       { nombre: "flores huaranccay karol", codigo: "1144521", ruta: "08" }
     ];
 
     const tbody = document.getElementById('clientes-body');
+    const buscador = document.getElementById('buscador');
+    const datalist = document.getElementById('sugerencias');
 
-    // Cargar clientes desde Firebase y construir la tabla
-    clientes.forEach(cliente => {
-      const tr = document.createElement('tr');
+    function renderClientes(filtrados) {
+      tbody.innerHTML = '';
+      filtrados.forEach(cliente => {
+        const tr = document.createElement('tr');
 
-      tr.innerHTML = `
-        <td>${cliente.nombre}</td>
-        <td>${cliente.codigo}</td>
-        <td>${cliente.ruta}</td>
-        <td>
-          <button id="btn-${cliente.codigo}" class="estado-btn">Cargando...</button>
-        </td>
-      `;
-      tbody.appendChild(tr);
+        tr.innerHTML = `
+          <td>${cliente.nombre}</td>
+          <td>${cliente.codigo}</td>
+          <td>${cliente.ruta}</td>
+          <td>
+            <button id="btn-${cliente.codigo}" class="estado-btn">Cargando...</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
 
-      const btn = document.getElementById(`btn-${cliente.codigo}`);
+        const btn = document.getElementById(`btn-${cliente.codigo}`);
 
-      // Escuchar cambios en Firebase en tiempo real
-      const ref = db.ref('clientes/' + cliente.codigo);
-      ref.on('value', snapshot => {
-        const estado = snapshot.val() || 'no-visitado';
-        btn.textContent = estado === 'visitado' ? 'Visitado' : 'No visitado';
-        btn.className = 'estado-btn ' + estado;
-      });
+        const ref = db.ref('clientes/' + cliente.codigo);
+        ref.on('value', snapshot => {
+          const estado = snapshot.val() || 'no-visitado';
+          btn.textContent = estado === 'visitado' ? 'Visitado' : 'No visitado';
+          btn.className = 'estado-btn ' + estado;
+        });
 
-      // Cambiar estado al hacer clic
-      btn.addEventListener('click', () => {
-        ref.once('value').then(snapshot => {
-          const estadoActual = snapshot.val();
-          const nuevoEstado = estadoActual === 'visitado' ? 'no-visitado' : 'visitado';
-          ref.set(nuevoEstado);
+        btn.addEventListener('click', () => {
+          ref.once('value').then(snapshot => {
+            const estadoActual = snapshot.val();
+            const nuevoEstado = estadoActual === 'visitado' ? 'no-visitado' : 'visitado';
+            ref.set(nuevoEstado);
+          });
         });
       });
+    }
+
+    // Mostrar todos al inicio
+    renderClientes(todosLosClientes);
+
+    // Autocompletado y filtrado
+    function actualizarSugerencias(input) {
+      const texto = input.toLowerCase();
+      const sugerencias = todosLosClientes.filter(cliente =>
+        cliente.nombre.toLowerCase().includes(texto) ||
+        cliente.codigo.includes(texto) ||
+        cliente.ruta.includes(texto)
+      );
+
+      datalist.innerHTML = '';
+      sugerencias.forEach(cliente => {
+        const option = document.createElement('option');
+        option.value = `${cliente.nombre} (${cliente.codigo})`;
+        datalist.appendChild(option);
+      });
+    }
+
+    buscador.addEventListener('input', (e) => {
+      const texto = e.target.value.toLowerCase();
+      actualizarSugerencias(texto);
+
+      const filtrados = todosLosClientes.filter(cliente =>
+        cliente.nombre.toLowerCase().includes(texto) ||
+        cliente.codigo.includes(texto) ||
+        cliente.ruta.includes(texto)
+      );
+
+      renderClientes(filtrados);
     });
   </script>
 
 </body>
 </html>
+
