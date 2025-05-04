@@ -5,7 +5,7 @@
   <title>Clientes</title>
   <style>
     table {
-      width: 80%;
+      width: 90%;
       margin: 50px auto;
       border-collapse: collapse;
     }
@@ -34,7 +34,7 @@
 
   <h2 style="text-align:center;">Clientes</h2>
 
-  <!-- 🔍 Buscador con autocompletado -->
+  <!-- 🔍 Buscador -->
   <div style="text-align: center; margin-top: 30px;">
     <input
       type="text"
@@ -52,6 +52,8 @@
         <th>Nombre</th>
         <th>Código</th>
         <th>Ruta</th>
+        <th>Ubicación</th>
+        <th>Requerimientos</th>
         <th>Estado</th>
       </tr>
     </thead>
@@ -77,15 +79,32 @@
       measurementId: "G-WD516HZ80N"
     };
 
-    // Inicializa Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // Clientes
+    // Clientes con ubicación y requerimientos
     const todosLosClientes = [
-      { nombre: "jaime coelle marina", codigo: "8050726", ruta: "08" },
-      { nombre: "ore quispe mirian", codigo: "616326", ruta: "08" },
-      { nombre: "flores huaranccay karol", codigo: "1144521", ruta: "08" }
+      {
+        nombre: "jaime coelle marina",
+        codigo: "8050726",
+        ruta: "08",
+        ubicacion: "https://maps.google.com/?q=-12.0464,-77.0428",
+        requerimientos: "Requiere refrigeración"
+      },
+      {
+        nombre: "ore quispe mirian",
+        codigo: "616326",
+        ruta: "08",
+        ubicacion: "https://maps.google.com/?q=-12.0564,-77.0500",
+        requerimientos: "Entrega urgente"
+      },
+      {
+        nombre: "flores huaranccay karol",
+        codigo: "1144521",
+        ruta: "08",
+        ubicacion: "https://maps.google.com/?q=-12.0600,-77.0300",
+        requerimientos: "Llevar catálogo"
+      }
     ];
 
     const tbody = document.getElementById('clientes-body');
@@ -101,6 +120,8 @@
           <td>${cliente.nombre}</td>
           <td>${cliente.codigo}</td>
           <td>${cliente.ruta}</td>
+          <td><a href="${cliente.ubicacion}" target="_blank">Ver mapa</a></td>
+          <td>${cliente.requerimientos}</td>
           <td>
             <button id="btn-${cliente.codigo}" class="estado-btn">Cargando...</button>
           </td>
@@ -129,7 +150,6 @@
     // Mostrar todos al inicio
     renderClientes(todosLosClientes);
 
-    // Autocompletado y filtrado
     function actualizarSugerencias(input) {
       const texto = input.toLowerCase();
       const sugerencias = todosLosClientes.filter(cliente =>
@@ -162,4 +182,3 @@
 
 </body>
 </html>
-
