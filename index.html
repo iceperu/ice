@@ -1,5 +1,57 @@
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Clientes</title>
+  <style>
+    table {
+      width: 80%;
+      margin: 50px auto;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+    .estado-btn {
+      padding: 8px 15px;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .visitado {
+      background-color: green;
+    }
+    .no-visitado {
+      background-color: red;
+    }
+  </style>
+</head>
+<body>
+
+  <h2 style="text-align:center;">Clientes</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Código</th>
+        <th>Ruta</th>
+        <th>Estado</th>
+      </tr>
+    </thead>
+    <tbody id="clientes-body">
+      <!-- Los clientes se cargarán aquí -->
+    </tbody>
+  </table>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+  <script>
     // 🔥 Configuración real de tu Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyBMUS3oqZOtUsuxFsVRjwXRA7HKA2pdnKY",
@@ -12,9 +64,11 @@
       measurementId: "G-WD516HZ80N"
     };
 
+    // Inicializa Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    // Lista de clientes
     const clientes = [
       { nombre: "Juan Pérez", codigo: "001", ruta: "Ruta A" },
       { nombre: "María López", codigo: "002", ruta: "Ruta B" },
@@ -23,6 +77,7 @@
 
     const tbody = document.getElementById('clientes-body');
 
+    // Cargar clientes desde Firebase y construir la tabla
     clientes.forEach(cliente => {
       const tr = document.createElement('tr');
 
@@ -38,6 +93,7 @@
 
       const btn = document.getElementById(`btn-${cliente.codigo}`);
 
+      // Escuchar cambios en Firebase en tiempo real
       const ref = db.ref('clientes/' + cliente.codigo);
       ref.on('value', snapshot => {
         const estado = snapshot.val() || 'no-visitado';
@@ -45,6 +101,7 @@
         btn.className = 'estado-btn ' + estado;
       });
 
+      // Cambiar estado al hacer clic
       btn.addEventListener('click', () => {
         ref.once('value').then(snapshot => {
           const estadoActual = snapshot.val();
@@ -53,5 +110,7 @@
         });
       });
     });
-  });
-</script>
+  </script>
+
+</body>
+</html>
