@@ -56,33 +56,52 @@
                 <td>Juan Pérez</td>
                 <td>001</td>
                 <td>Ruta A</td>
-                <td><button class="estado-btn no-visitado" onclick="cambiarEstado(this)">No visitado</button></td>
+                <td><button class="estado-btn" onclick="cambiarEstado(this, '001')">Cargando...</button></td>
             </tr>
             <tr>
                 <td>María López</td>
                 <td>002</td>
                 <td>Ruta B</td>
-                <td><button class="estado-btn no-visitado" onclick="cambiarEstado(this)">No visitado</button></td>
+                <td><button class="estado-btn" onclick="cambiarEstado(this, '002')">Cargando...</button></td>
             </tr>
             <tr>
                 <td>Carlos Ruiz</td>
                 <td>003</td>
                 <td>Ruta C</td>
-                <td><button class="estado-btn no-visitado" onclick="cambiarEstado(this)">No visitado</button></td>
+                <td><button class="estado-btn" onclick="cambiarEstado(this, '003')">Cargando...</button></td>
             </tr>
         </tbody>
     </table>
 
     <script>
-        function cambiarEstado(boton) {
+        // Cargar estados guardados
+        document.addEventListener("DOMContentLoaded", () => {
+            const botones = document.querySelectorAll(".estado-btn");
+            botones.forEach((boton, index) => {
+                const codigo = ['001', '002', '003'][index]; // puedes hacer esto más dinámico si agregas más clientes
+                const estadoGuardado = localStorage.getItem('cliente_' + codigo);
+
+                if (estadoGuardado === "visitado") {
+                    boton.classList.add("visitado");
+                    boton.textContent = "Visitado";
+                } else {
+                    boton.classList.add("no-visitado");
+                    boton.textContent = "No visitado";
+                }
+            });
+        });
+
+        function cambiarEstado(boton, codigo) {
             if (boton.classList.contains("no-visitado")) {
                 boton.classList.remove("no-visitado");
                 boton.classList.add("visitado");
                 boton.textContent = "Visitado";
+                localStorage.setItem('cliente_' + codigo, "visitado");
             } else {
                 boton.classList.remove("visitado");
                 boton.classList.add("no-visitado");
                 boton.textContent = "No visitado";
+                localStorage.setItem('cliente_' + codigo, "no-visitado");
             }
         }
     </script>
