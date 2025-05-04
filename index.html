@@ -28,6 +28,16 @@
     .no-visitado {
       background-color: red;
     }
+    .edit-icon {
+      cursor: pointer;
+      margin-left: 5px;
+      color: blue;
+    }
+    .edit-input {
+      width: 90%;
+      font-size: 14px;
+      padding: 4px;
+    }
   </style>
 </head>
 <body>
@@ -67,7 +77,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
   <script>
-    // 🔥 Configuración de Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyBMUS3oqZOtUsuxFsVRjwXRA7HKA2pdnKY",
       authDomain: "iceperu-5613a.firebaseapp.com",
@@ -82,28 +91,27 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // Clientes con ubicación y requerimientos
     const todosLosClientes = [
       {
         nombre: "jaime coelle marina",
         codigo: "8050726",
         ruta: "08",
         ubicacion: "https://maps.app.goo.gl/cdQCsNwnzs5a97gN7",
-        requerimientos: "Requiere refrigeración"
+        requerimientos: ""
       },
       {
         nombre: "ore quispe mirian",
         codigo: "616326",
         ruta: "08",
         ubicacion: "https://maps.app.goo.gl/63X4gJ6jA2mJadGLA",
-        requerimientos: "Entrega urgente"
+        requerimientos: ""
       },
       {
         nombre: "flores huaranccay karol",
         codigo: "1144521",
         ruta: "08",
         ubicacion: "https://maps.app.goo.gl/qN62PxxF7pic5hRr6",
-        requerimientos: "Llevar catálogo"
+        requerimientos: ""
       }
     ];
 
@@ -121,27 +129,64 @@
           <td>${cliente.codigo}</td>
           <td>${cliente.ruta}</td>
           <td><a href="${cliente.ubicacion}" target="_blank">Ver mapa</a></td>
-          <td>${cliente.requerimientos}</td>
+          <td id="req-${cliente.codigo}">
+            <span class="req-text">${cliente.requerimientos || "Sin requerimientos"}</span>
+            <span class="edit-icon" title="Editar">&#9998;</span>
+          </td>
           <td>
             <button id="btn-${cliente.codigo}" class="estado-btn">Cargando...</button>
           </td>
         `;
         tbody.appendChild(tr);
 
+        // Estado
         const btn = document.getElementById(`btn-${cliente.codigo}`);
+        const estadoRef = db.ref('clientes/' + cliente.codigo + '/estado');
 
-        const ref = db.ref('clientes/' + cliente.codigo);
-        ref.on('value', snapshot => {
+        estadoRef.on('value', snapshot => {
           const estado = snapshot.val() || 'no-visitado';
           btn.textContent = estado === 'visitado' ? 'Visitado' : 'No visitado';
           btn.className = 'estado-btn ' + estado;
         });
 
         btn.addEventListener('click', () => {
-          ref.once('value').then(snapshot => {
+          estadoRef.once('value').then(snapshot => {
             const estadoActual = snapshot.val();
             const nuevoEstado = estadoActual === 'visitado' ? 'no-visitado' : 'visitado';
-            ref.set(nuevoEstado);
+            estadoRef.set(nuevoEstado);
+          });
+        });
+
+        // Requerimientos (editable)
+        const reqCell = document.getElementById(`req-${cliente.codigo}`);
+        const editIcon = reqCell.querySelector('.edit-icon');
+        const reqText = reqCell.querySelector('.req-text');
+        const reqRef = db.ref('clientes/' + cliente.codigo + '/requerimientos');
+
+        // Escuchar cambios desde Firebase
+        reqRef.on('value', snapshot => {
+          reqText.textContent = snapshot.val() || "Sin requerimientos";
+        });
+
+        editIcon.addEventListener('click', () => {
+          const currentText = reqText.textContent === "Sin requerimientos" ? "" : reqText.textContent;
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.className = 'edit-input';
+          input.value = currentText;
+
+          reqCell.innerHTML = '';
+          reqCell.appendChild(input);
+          input.focus();
+
+          input.addEventListener('blur', () => {
+            const nuevoTexto = input.value.trim();
+            reqRef.set(nuevoTexto);
+            reqCell.innerHTML = `
+              <span class="req-text">${nuevoTexto || "Sin requerimientos"}</span>
+              <span class="edit-icon" title="Editar">&#9998;</span>
+            `;
+            renderClientes(filtrados); // vuelve a cargar íconos
           });
         });
       });
