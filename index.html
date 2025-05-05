@@ -65,26 +65,11 @@
       font-size: 16px;
       margin: 5px;
     }
-    .btn-group {
-      text-align: center;
-      margin-top: 20px;
-    }
-    .btn-group button {
-      margin: 0 10px;
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-    }
   </style>
 </head>
 <body>
 
   <h2 style="text-align:center;">Clientes</h2>
-
-  <div class="btn-group">
-    <button id="btn-agregar">Agregar todos</button>
-    <button id="btn-eliminar">Eliminar todos</button>
-  </div>
 
   <div style="text-align: center; margin-top: 30px;">
     <input
@@ -212,6 +197,7 @@
         reqRef.on('value', snapshot => {
           reqText.textContent = snapshot.val() || "Sin requerimientos";
         });
+
         editIcon.addEventListener('click', () => {
           const currentText = reqText.textContent === "Sin requerimientos" ? "" : reqText.textContent;
           const input = document.createElement('input');
@@ -224,7 +210,6 @@
           input.addEventListener('blur', () => {
             const nuevoTexto = input.value.trim();
             reqRef.set(nuevoTexto);
-            renderClientes(filtrados);
           });
         });
       });
@@ -247,30 +232,7 @@
       });
       renderClientes(filtrados);
     });
-
-    // Botón: Agregar todos
-    document.getElementById('btn-agregar').addEventListener('click', () => {
-      todosLosClientes.forEach(cliente => {
-        const ref = db.ref('clientes/' + cliente.codigo);
-        ref.set({
-          nombre: cliente.nombre,
-          ruta: cliente.ruta,
-          ubicacion: cliente.ubicacion,
-          requerimientos: cliente.requerimientos || "",
-          estado: "no-visitado"
-        });
-      });
-      alert("Clientes agregados");
-    });
-
-    // Botón: Eliminar todos
-    document.getElementById('btn-eliminar').addEventListener('click', () => {
-      if (confirm("¿Estás seguro de eliminar todos los clientes?")) {
-        db.ref('clientes').remove().then(() => alert("Clientes eliminados"));
-      }
-    });
   </script>
 
 </body>
 </html>
-
