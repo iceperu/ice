@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>clientes Ice: 7-8-9-10-11</title>
+  <title>Clientes</title>
   <style>
     table {
       width: 90%;
@@ -59,17 +59,21 @@
       color: white;
       border-radius: 10px;
     }
-    .password-modal input,
-    .password-modal button {
+    .password-modal input {
       padding: 10px;
+      margin-bottom: 10px;
       font-size: 16px;
-      margin: 5px;
+    }
+    .password-modal button {
+      padding: 8px 16px;
+      font-size: 16px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
 
-  <h2 style="text-align:center;">clientes Ice: 7-8-9-10-11</h2>
+  <h2 style="text-align:center;">Clientes</h2>
 
   <div style="text-align: center; margin-top: 30px;">
     <input
@@ -99,7 +103,6 @@
   <div id="password-modal" class="password-modal">
     <h3>Introduce la contraseña</h3>
     <input type="password" id="password-input" placeholder="Contraseña" />
-    <br>
     <button id="submit-password">Aceptar</button>
     <button id="cancel-password">Cancelar</button>
   </div>
@@ -115,7 +118,8 @@
       projectId: "iceperu-5613a",
       storageBucket: "iceperu-5613a.appspot.com",
       messagingSenderId: "160752506128",
-      appId: "1:160752506128:web:a2781301bd763db4388195"
+      appId: "1:160752506128:web:a2781301bd763db4388195",
+      measurementId: "G-WD516HZ80N"
     };
 
     firebase.initializeApp(firebaseConfig);
@@ -134,7 +138,13 @@
       { nombre: "flores huaranccay karol", codigo: "1144521", ruta: "08", ubicacion: "https://maps.app.goo.gl/qN62PxxF7pic5hRr6", requerimientos: "" }
     ];
 
-    const passwordMap = { '07': '1234', '08': '5678', '09': '9101', '10': '1121', '11': '3141' };
+    const passwordMap = {
+      '07': '1234',
+      '08': '5678',
+      '09': '9101',
+      '10': '1121',
+      '11': '3141'
+    };
 
     const tbody = document.getElementById('clientes-body');
     const buscador = document.getElementById('buscador');
@@ -157,9 +167,7 @@
             <span class="req-text">${cliente.requerimientos || "Sin requerimientos"}</span>
             <span class="edit-icon" title="Editar">&#9998;</span>
           </td>
-          <td>
-            <button id="btn-${cliente.codigo}" class="estado-btn">Cargando...</button>
-          </td>
+          <td><button id="btn-${cliente.codigo}" class="estado-btn">Cargando...</button></td>
         `;
         tbody.appendChild(tr);
 
@@ -175,11 +183,9 @@
           const ruta = cliente.ruta;
           passwordModal.style.display = 'block';
           submitPassword.onclick = () => {
-            const enteredPassword = passwordInput.value;
-            if (enteredPassword === passwordMap[ruta]) {
+            if (passwordInput.value === passwordMap[ruta]) {
               estadoRef.once('value').then(snapshot => {
-                const estadoActual = snapshot.val();
-                const nuevoEstado = estadoActual === 'visitado' ? 'no-visitado' : 'visitado';
+                const nuevoEstado = snapshot.val() === 'visitado' ? 'no-visitado' : 'visitado';
                 estadoRef.set(nuevoEstado);
               });
               passwordModal.style.display = 'none';
@@ -187,13 +193,16 @@
               alert('Contraseña incorrecta');
             }
           };
-          cancelPassword.onclick = () => passwordModal.style.display = 'none';
+          cancelPassword.onclick = () => {
+            passwordModal.style.display = 'none';
+          };
         });
 
         const reqCell = document.getElementById(`req-${cliente.codigo}`);
         const editIcon = reqCell.querySelector('.edit-icon');
         const reqText = reqCell.querySelector('.req-text');
         const reqRef = db.ref('clientes/' + cliente.codigo + '/requerimientos');
+
         reqRef.on('value', snapshot => {
           reqText.textContent = snapshot.val() || "Sin requerimientos";
         });
@@ -210,6 +219,11 @@
           input.addEventListener('blur', () => {
             const nuevoTexto = input.value.trim();
             reqRef.set(nuevoTexto);
+            reqCell.innerHTML = `
+              <span class="req-text">${nuevoTexto || "Sin requerimientos"}</span>
+              <span class="edit-icon" title="Editar">&#9998;</span>
+            `;
+            renderClientes(filtrados);
           });
         });
       });
@@ -220,15 +234,15 @@
     buscador.addEventListener('input', (e) => {
       const texto = e.target.value.toLowerCase();
       datalist.innerHTML = '';
-      const filtrados = todosLosClientes.filter(cliente =>
-        cliente.nombre.toLowerCase().includes(texto) ||
-        cliente.codigo.includes(texto) ||
-        cliente.ruta.includes(texto)
+      const filtrados = todosLosClientes.filter(c =>
+        c.nombre.toLowerCase().includes(texto) ||
+        c.codigo.includes(texto) ||
+        c.ruta.includes(texto)
       );
       filtrados.forEach(c => {
-        const option = document.createElement('option');
-        option.value = `${c.nombre} (${c.codigo})`;
-        datalist.appendChild(option);
+        const opt = document.createElement('option');
+        opt.value = `${c.nombre} (${c.codigo})`;
+        datalist.appendChild(opt);
       });
       renderClientes(filtrados);
     });
