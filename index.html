@@ -14,12 +14,9 @@
       padding: 10px;
       text-align: center;
     }
-
-    /* Fondo verde para los encabezados */
     th {
-      background-color: #a8e6a6; /* Verde claro */
+      background-color: #a8e6a6;
     }
-
     .estado-btn {
       padding: 8px 15px;
       border: none;
@@ -34,27 +31,23 @@
     .no-visitado {
       background-color: red;
     }
-
-    /* Lápices alineados a la derecha */
     .edit-cell {
-      position: relative; /* Para poder mover el icono */
+      position: relative;
     }
     .edit-icon {
       cursor: pointer;
       margin-left: 5px;
       color: blue;
       position: absolute;
-      right: 10px; /* Posicionar a la derecha */
+      right: 10px;
       top: 50%;
       transform: translateY(-50%);
     }
-
     .edit-input {
       width: 90%;
       font-size: 14px;
       padding: 4px;
     }
-
     .password-modal {
       display: none;
       position: fixed;
@@ -66,13 +59,19 @@
       color: white;
       border-radius: 10px;
     }
-    .password-modal input {
-      padding: 10px;
-      margin-bottom: 10px;
-      font-size: 16px;
-    }
+    .password-modal input,
     .password-modal button {
-      padding: 8px 16px;
+      padding: 10px;
+      font-size: 16px;
+      margin: 5px;
+    }
+    .btn-group {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .btn-group button {
+      margin: 0 10px;
+      padding: 10px 20px;
       font-size: 16px;
       cursor: pointer;
     }
@@ -82,7 +81,11 @@
 
   <h2 style="text-align:center;">Clientes</h2>
 
-  <!-- 🔍 Buscador -->
+  <div class="btn-group">
+    <button id="btn-agregar">Agregar todos</button>
+    <button id="btn-eliminar">Eliminar todos</button>
+  </div>
+
   <div style="text-align: center; margin-top: 30px;">
     <input
       type="text"
@@ -105,20 +108,17 @@
         <th>Estado</th>
       </tr>
     </thead>
-    <tbody id="clientes-body">
-      <!-- Los clientes se cargarán aquí -->
-    </tbody>
+    <tbody id="clientes-body"></tbody>
   </table>
 
-  <!-- Modal para contraseña -->
   <div id="password-modal" class="password-modal">
     <h3>Introduce la contraseña</h3>
     <input type="password" id="password-input" placeholder="Contraseña" />
+    <br>
     <button id="submit-password">Aceptar</button>
     <button id="cancel-password">Cancelar</button>
   </div>
 
-  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
@@ -128,96 +128,28 @@
       authDomain: "iceperu-5613a.firebaseapp.com",
       databaseURL: "https://iceperu-5613a-default-rtdb.firebaseio.com",
       projectId: "iceperu-5613a",
-      storageBucket: "iceperu-5613a.firebasestorage.app",
+      storageBucket: "iceperu-5613a.appspot.com",
       messagingSenderId: "160752506128",
-      appId: "1:160752506128:web:a2781301bd763db4388195",
-      measurementId: "G-WD516HZ80N"
+      appId: "1:160752506128:web:a2781301bd763db4388195"
     };
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
     const todosLosClientes = [
-      {
-        nombre: "jaime coelle marina",
-        codigo: "8050726",
-        ruta: "08",
-        ubicacion: "https://maps.app.goo.gl/cdQCsNwnzs5a97gN7",
-        requerimientos: ""
-      },
-      {
-        nombre: "ore quispe mirian",
-        codigo: "616326",
-        ruta: "08",
-        ubicacion: "https://maps.app.goo.gl/63X4gJ6jA2mJadGLA",
-        requerimientos: ""
-      },
-       {
-        nombre: "godoy bonilla emilia",
-        codigo: "513511",
-        ruta: "08",
-        ubicacion: "falta",
-        requerimientos: ""
-      },
-      {
-        nombre: "valdivia vargas aurea",
-        codigo: "8050729",
-        ruta: "08",
-        ubicacion: "https://maps.app.goo.gl/rxbiqn5ZFPNDZ43Q6",
-        requerimientos: ""
-      },
-        {
-        nombre: "villalobos minaya isabel",
-        codigo: "8050739",
-        ruta: "08",
-        ubicacion: "https://maps.app.goo.gl/PxPXWkpU5QF9w55v5",
-        requerimientos: ""
-      },
-       },
-        {
-        nombre: "bautista yamocca violeta",
-        codigo: "8049946",
-        ruta: "08",
-        ubicacion: "https://maps.app.goo.gl/3ZU2Fpg7LRYDYGPT8",
-        requerimientos: ""
-      },
-       {
-        nombre: "machahuay vda de c",
-        codigo: "628117",
-        ruta: "08",
-        ubicacion: "https://maps.app.goo.gl/dbDMxJDbhivn31Q77",
-        requerimientos: ""
-      },
-        {
-        nombre: "ccaico tomaylla sindy",
-        codigo: "1379941",
-        ruta: "08",
-        ubicacion: "https://maps.app.goo.gl/wYdT1vojFV4p8y8C9",
-        requerimientos: ""
-      },
-       {
-        nombre: "berna quispe antonia",
-        codigo: "603877",
-        ruta: "08",
-        ubicacion: "https://maps.app.goo.gl/31Trg2FX3wNP2rtP8",
-        requerimientos: ""
-      },
-      {
-        nombre: "flores huaranccay karol",
-        codigo: "1144521",
-        ruta: "08",
-        ubicacion: "https://maps.app.goo.gl/qN62PxxF7pic5hRr6",
-        requerimientos: ""
-      }
+      { nombre: "jaime coelle marina", codigo: "8050726", ruta: "08", ubicacion: "https://maps.app.goo.gl/cdQCsNwnzs5a97gN7", requerimientos: "" },
+      { nombre: "ore quispe mirian", codigo: "616326", ruta: "08", ubicacion: "https://maps.app.goo.gl/63X4gJ6jA2mJadGLA", requerimientos: "" },
+      { nombre: "godoy bonilla emilia", codigo: "513511", ruta: "08", ubicacion: "falta", requerimientos: "" },
+      { nombre: "valdivia vargas aurea", codigo: "8050729", ruta: "08", ubicacion: "https://maps.app.goo.gl/rxbiqn5ZFPNDZ43Q6", requerimientos: "" },
+      { nombre: "villalobos minaya isabel", codigo: "8050739", ruta: "08", ubicacion: "https://maps.app.goo.gl/PxPXWkpU5QF9w55v5", requerimientos: "" },
+      { nombre: "bautista yamocca violeta", codigo: "8049946", ruta: "08", ubicacion: "https://maps.app.goo.gl/3ZU2Fpg7LRYDYGPT8", requerimientos: "" },
+      { nombre: "machahuay vda de c", codigo: "628117", ruta: "08", ubicacion: "https://maps.app.goo.gl/dbDMxJDbhivn31Q77", requerimientos: "" },
+      { nombre: "ccaico tomaylla sindy", codigo: "1379941", ruta: "08", ubicacion: "https://maps.app.goo.gl/wYdT1vojFV4p8y8C9", requerimientos: "" },
+      { nombre: "berna quispe antonia", codigo: "603877", ruta: "08", ubicacion: "https://maps.app.goo.gl/31Trg2FX3wNP2rtP8", requerimientos: "" },
+      { nombre: "flores huaranccay karol", codigo: "1144521", ruta: "08", ubicacion: "https://maps.app.goo.gl/qN62PxxF7pic5hRr6", requerimientos: "" }
     ];
 
-    const passwordMap = {
-      '07': '1234',
-      '08': '5678',
-      '09': '9101',
-      '10': '1121',
-      '11': '3141'
-    };
+    const passwordMap = { '07': '1234', '08': '5678', '09': '9101', '10': '1121', '11': '3141' };
 
     const tbody = document.getElementById('clientes-body');
     const buscador = document.getElementById('buscador');
@@ -231,7 +163,6 @@
       tbody.innerHTML = '';
       filtrados.forEach(cliente => {
         const tr = document.createElement('tr');
-
         tr.innerHTML = `
           <td>${cliente.nombre}</td>
           <td>${cliente.codigo}</td>
@@ -249,7 +180,6 @@
 
         const btn = document.getElementById(`btn-${cliente.codigo}`);
         const estadoRef = db.ref('clientes/' + cliente.codigo + '/estado');
-
         estadoRef.on('value', snapshot => {
           const estado = snapshot.val() || 'no-visitado';
           btn.textContent = estado === 'visitado' ? 'Visitado' : 'No visitado';
@@ -257,56 +187,43 @@
         });
 
         btn.addEventListener('click', () => {
-          // Mostrar el modal para ingresar la contraseña
           const ruta = cliente.ruta;
           passwordModal.style.display = 'block';
           submitPassword.onclick = () => {
             const enteredPassword = passwordInput.value;
             if (enteredPassword === passwordMap[ruta]) {
-              // Contraseña correcta, cambiar el estado
               estadoRef.once('value').then(snapshot => {
                 const estadoActual = snapshot.val();
                 const nuevoEstado = estadoActual === 'visitado' ? 'no-visitado' : 'visitado';
                 estadoRef.set(nuevoEstado);
               });
-              passwordModal.style.display = 'none'; // Cerrar modal
+              passwordModal.style.display = 'none';
             } else {
               alert('Contraseña incorrecta');
             }
           };
-
-          cancelPassword.onclick = () => {
-            passwordModal.style.display = 'none'; // Cerrar modal sin hacer nada
-          };
+          cancelPassword.onclick = () => passwordModal.style.display = 'none';
         });
 
         const reqCell = document.getElementById(`req-${cliente.codigo}`);
         const editIcon = reqCell.querySelector('.edit-icon');
         const reqText = reqCell.querySelector('.req-text');
         const reqRef = db.ref('clientes/' + cliente.codigo + '/requerimientos');
-
         reqRef.on('value', snapshot => {
           reqText.textContent = snapshot.val() || "Sin requerimientos";
         });
-
         editIcon.addEventListener('click', () => {
           const currentText = reqText.textContent === "Sin requerimientos" ? "" : reqText.textContent;
           const input = document.createElement('input');
           input.type = 'text';
           input.className = 'edit-input';
           input.value = currentText;
-
           reqCell.innerHTML = '';
           reqCell.appendChild(input);
           input.focus();
-
           input.addEventListener('blur', () => {
             const nuevoTexto = input.value.trim();
             reqRef.set(nuevoTexto);
-            reqCell.innerHTML = `
-              <span class="req-text">${nuevoTexto || "Sin requerimientos"}</span>
-              <span class="edit-icon" title="Editar">&#9998;</span>
-            `;
             renderClientes(filtrados);
           });
         });
@@ -315,35 +232,45 @@
 
     renderClientes(todosLosClientes);
 
-    function actualizarSugerencias(input) {
-      const texto = input.toLowerCase();
-      const sugerencias = todosLosClientes.filter(cliente =>
-        cliente.nombre.toLowerCase().includes(texto) ||
-        cliente.codigo.includes(texto) ||
-        cliente.ruta.includes(texto)
-      );
-
-      datalist.innerHTML = '';
-      sugerencias.forEach(cliente => {
-        const option = document.createElement('option');
-        option.value = `${cliente.nombre} (${cliente.codigo})`;
-        datalist.appendChild(option);
-      });
-    }
-
     buscador.addEventListener('input', (e) => {
       const texto = e.target.value.toLowerCase();
-      actualizarSugerencias(texto);
-
+      datalist.innerHTML = '';
       const filtrados = todosLosClientes.filter(cliente =>
         cliente.nombre.toLowerCase().includes(texto) ||
         cliente.codigo.includes(texto) ||
         cliente.ruta.includes(texto)
       );
-
+      filtrados.forEach(c => {
+        const option = document.createElement('option');
+        option.value = `${c.nombre} (${c.codigo})`;
+        datalist.appendChild(option);
+      });
       renderClientes(filtrados);
+    });
+
+    // Botón: Agregar todos
+    document.getElementById('btn-agregar').addEventListener('click', () => {
+      todosLosClientes.forEach(cliente => {
+        const ref = db.ref('clientes/' + cliente.codigo);
+        ref.set({
+          nombre: cliente.nombre,
+          ruta: cliente.ruta,
+          ubicacion: cliente.ubicacion,
+          requerimientos: cliente.requerimientos || "",
+          estado: "no-visitado"
+        });
+      });
+      alert("Clientes agregados");
+    });
+
+    // Botón: Eliminar todos
+    document.getElementById('btn-eliminar').addEventListener('click', () => {
+      if (confirm("¿Estás seguro de eliminar todos los clientes?")) {
+        db.ref('clientes').remove().then(() => alert("Clientes eliminados"));
+      }
     });
   </script>
 
 </body>
 </html>
+
