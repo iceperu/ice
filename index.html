@@ -80,10 +80,26 @@
       type="text"
       id="buscador"
       placeholder="Buscar por nombre, código o ruta..."
-      style="width: 50%; padding: 10px; font-size: 16px;"
+      style="width: 20%; padding: 10px; font-size: 16px;"
       list="sugerencias"
     />
     <datalist id="sugerencias"></datalist>
+
+    <!-- Filtros adicionales -->
+    <select id="filtroRuta" style="padding: 10px; font-size: 16px;">
+      <option value="">Filtrar por ruta</option>
+      <option value="07">Ruta 07</option>
+      <option value="08">Ruta 08</option>
+      <option value="09">Ruta 09</option>
+      <option value="10">Ruta 10</option>
+      <option value="11">Ruta 11</option>
+    </select>
+
+    <select id="filtroEstado" style="padding: 10px; font-size: 16px;">
+      <option value="">Filtrar por estado</option>
+      <option value="visitado">Visitado</option>
+      <option value="no-visitado">No visitado</option>
+    </select>
   </div>
 
   <table>
@@ -210,6 +226,8 @@
 
     const tbody = document.getElementById('clientes-body');
     const buscador = document.getElementById('buscador');
+    const filtroRuta = document.getElementById('filtroRuta');
+    const filtroEstado = document.getElementById('filtroEstado');
     const datalist = document.getElementById('sugerencias');
     const passwordModal = document.getElementById('password-modal');
     const passwordInput = document.getElementById('password-input');
@@ -311,6 +329,29 @@
         datalist.appendChild(opt);
       });
       renderClientes(filtrados); // Renderiza solo los clientes filtrados
+    });
+
+    // Filtro por ruta
+    filtroRuta.addEventListener('change', () => {
+      const ruta = filtroRuta.value;
+      let filtrados = todosLosClientes.filter(c => 
+        (ruta ? c.ruta === ruta : true)
+      );
+      renderClientes(filtrados);
+    });
+
+    // Filtro por estado
+    filtroEstado.addEventListener('change', () => {
+      const estado = filtroEstado.value;
+      let filtrados = todosLosClientes.filter(c => {
+        const estadoRef = db.ref('clientes/' + c.codigo + '/estado');
+        let clientEstado = null;
+        estadoRef.once('value', snapshot => {
+          clientEstado = snapshot.val();
+        });
+        return (estado ? clientEstado === estado : true);
+      });
+      renderClientes(filtrados);
     });
 
     function mostrarImagen(src) {
