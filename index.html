@@ -168,9 +168,9 @@
             <span class="req-text">${cliente.requerimientos || "Sin requerimientos"}</span>
             <span class="edit-icon" title="Editar">&#9998;</span>
           </td>
-          <td>
-            ${cliente.imagen ? `<img src="${cliente.imagen}" style="width:60px;cursor:pointer;" onclick="mostrarImagen('${cliente.imagen}')">` : "Sin imagen"}
-          </td>
+         <td>
+  ${cliente.imagen ? `<img src="${cliente.imagen}" style="width:60px;cursor:pointer;" onclick="mostrarImagen('${cliente.imagen}')">` : "Sin imagen"}
+</td>
           <td><button id="btn-${cliente.codigo}" class="estado-btn">Cargando...</button></td>
         `;
         tbody.appendChild(tr);
