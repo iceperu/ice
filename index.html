@@ -69,6 +69,17 @@
       font-size: 16px;
       cursor: pointer;
     }
+    .route-btn {
+      margin: 5px;
+      padding: 10px;
+      cursor: pointer;
+      border-radius: 5px;
+      background-color: #f0f0f0;
+      font-weight: bold;
+    }
+    .active-btn {
+      background-color: #a8e6a6;
+    }
   </style>
 </head>
 <body>
@@ -84,6 +95,21 @@
       list="sugerencias"
     />
     <datalist id="sugerencias"></datalist>
+  </div>
+
+  <!-- Botones de rutas -->
+  <div style="text-align: center; margin-top: 20px;">
+    <button class="route-btn" id="btn-7">Ruta 7</button>
+    <button class="route-btn" id="btn-8">Ruta 8</button>
+    <button class="route-btn" id="btn-9">Ruta 9</button>
+    <button class="route-btn" id="btn-10">Ruta 10</button>
+    <button class="route-btn" id="btn-11">Ruta 11</button>
+  </div>
+
+  <!-- Botones de estado -->
+  <div style="text-align: center; margin-top: 20px;">
+    <button class="estado-btn" id="visitado-btn">Visitado</button>
+    <button class="estado-btn" id="no-visitado-btn">No Visitado</button>
   </div>
 
   <table>
@@ -126,80 +152,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const todosLosClientes = [
-  {
-    nombre: "jaime coelle marina",
-    codigo: "8050726",
-    ruta: "08",
-    ubicacion: "https://maps.app.goo.gl/cdQCsNwnzs5a97gN7",
-    requerimientos: "",
-    imagen: "https://i.postimg.cc/85n5x39D/cliente-prueba.jpg"
-  },
-  {
-    nombre: "ore quispe mirian",
-    codigo: "616326",
-    ruta: "08",
-    ubicacion: "https://maps.app.goo.gl/63X4gJ6jA2mJadGLA",
-    requerimientos: ""
-  },
-  {
-    nombre: "godoy bonilla emilia",
-    codigo: "513511",
-    ruta: "08",
-    ubicacion: "falta",
-    requerimientos: ""
-  },
-  {
-    nombre: "valdivia vargas aurea",
-    codigo: "8050729",
-    ruta: "08",
-    ubicacion: "https://maps.app.goo.gl/rxbiqn5ZFPNDZ43Q6",
-    requerimientos: ""
-  },
-  {
-    nombre: "villalobos minaya isabel",
-    codigo: "8050739",
-    ruta: "08",
-    ubicacion: "https://maps.app.goo.gl/PxPXWkpU5QF9w55v5",
-    requerimientos: ""
-  },
-  {
-    nombre: "bautista yamocca violeta",
-    codigo: "8049946",
-    ruta: "08",
-    ubicacion: "https://maps.app.goo.gl/3ZU2Fpg7LRYDYGPT8",
-    requerimientos: ""
-  },
-  {
-    nombre: "machahuay vda de c",
-    codigo: "628117",
-    ruta: "08",
-    ubicacion: "https://maps.app.goo.gl/dbDMxJDbhivn31Q77",
-    requerimientos: ""
-  },
-  {
-    nombre: "ccaico tomaylla sindy",
-    codigo: "1379941",
-    ruta: "08",
-    ubicacion: "https://maps.app.goo.gl/wYdT1vojFV4p8y8C9",
-    requerimientos: ""
-  },
-  {
-    nombre: "berna quispe antonia",
-    codigo: "603877",
-    ruta: "08",
-    ubicacion: "https://maps.app.goo.gl/31Trg2FX3wNP2rtP8",
-    requerimientos: ""
-  },
-  {
-    nombre: "flores huaranccay karol",
-    codigo: "1144521",
-    ruta: "08",
-    ubicacion: "https://maps.app.goo.gl/qN62PxxF7pic5hRr6",
-    requerimientos: ""
-  }
-];
-
+    const todosLosClientes = [ /* ... tus datos de clientes ... */ ];
 
     const passwordMap = {
       '07': '1234',
@@ -217,8 +170,23 @@
     const submitPassword = document.getElementById('submit-password');
     const cancelPassword = document.getElementById('cancel-password');
 
-    function renderClientes(filtrados) {
+    let clientesFiltrados = todosLosClientes;
+    let rutaFiltrada = null;
+    let estadoFiltrado = null;
+
+    function renderClientes() {
       tbody.innerHTML = '';
+      const filtrados = clientesFiltrados.filter(cliente => {
+        const rutaCoincide = rutaFiltrada ? cliente.ruta === rutaFiltrada : true;
+        const estadoRef = db.ref('clientes/' + cliente.codigo + '/estado');
+        let estadoCliente = 'no-visitado';
+        estadoRef.once('value').then(snapshot => {
+          estadoCliente = snapshot.val() || 'no-visitado';
+        });
+        const estadoCoincide = estadoFiltrado ? estadoCliente === estadoFiltrado : true;
+        return rutaCoincide && estadoCoincide;
+      });
+
       filtrados.forEach(cliente => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -230,13 +198,14 @@
             <span class="req-text">${cliente.requerimientos || "Sin requerimientos"}</span>
             <span class="edit-icon" title="Editar">&#9998;</span>
           </td>
-         <td>
-  ${cliente.imagen ? `<img src="${cliente.imagen}" style="width:60px;cursor:pointer;" onclick="mostrarImagen('${cliente.imagen}')">` : "Sin imagen"}
-</td>
+          <td>
+            ${cliente.imagen ? `<img src="${cliente.imagen}" style="width:60px;cursor:pointer;" onclick="mostrarImagen('${cliente.imagen}')">` : "Sin imagen"}
+          </td>
           <td><button id="btn-${cliente.codigo}" class="estado-btn">Cargando...</button></td>
         `;
         tbody.appendChild(tr);
 
+        // Estado y funcionalidad de los botones
         const btn = document.getElementById(`btn-${cliente.codigo}`);
         const estadoRef = db.ref('clientes/' + cliente.codigo + '/estado');
         estadoRef.on('value', snapshot => {
@@ -289,55 +258,58 @@
               <span class="req-text">${nuevoTexto || "Sin requerimientos"}</span>
               <span class="edit-icon" title="Editar">&#9998;</span>
             `;
-            renderClientes(filtrados);
+            renderClientes();
           });
         });
       });
     }
 
-    renderClientes(todosLosClientes);
+    renderClientes();
 
     buscador.addEventListener('input', (e) => {
       const texto = e.target.value.toLowerCase();
       datalist.innerHTML = '';
-      const filtrados = todosLosClientes.filter(c =>
+      clientesFiltrados = todosLosClientes.filter(c =>
         c.nombre.toLowerCase().includes(texto) ||
         c.codigo.includes(texto) ||
         c.ruta.includes(texto)
       );
-      filtrados.forEach(c => {
-        const opt = document.createElement('option');
-        opt.value = `${c.nombre} (${c.codigo})`;
-        datalist.appendChild(opt);
-      });
-      renderClientes(filtrados);
+      renderClientes();
     });
 
-    function mostrarImagen(src) {
-      const modal = document.createElement('div');
-      modal.style.position = 'fixed';
-      modal.style.top = '0';
-      modal.style.left = '0';
-      modal.style.width = '100%';
-      modal.style.height = '100%';
-      modal.style.backgroundColor = 'rgba(0,0,0,0.8)';
-      modal.style.display = 'flex';
-      modal.style.alignItems = 'center';
-      modal.style.justifyContent = 'center';
-      modal.style.zIndex = '9999';
+    // Filtro por ruta
+    document.getElementById('btn-7').addEventListener('click', () => {
+      rutaFiltrada = '07';
+      renderClientes();
+    });
+    document.getElementById('btn-8').addEventListener('click', () => {
+      rutaFiltrada = '08';
+      renderClientes();
+    });
+    document.getElementById('btn-9').addEventListener('click', () => {
+      rutaFiltrada = '09';
+      renderClientes();
+    });
+    document.getElementById('btn-10').addEventListener('click', () => {
+      rutaFiltrada = '10';
+      renderClientes();
+    });
+    document.getElementById('btn-11').addEventListener('click', () => {
+      rutaFiltrada = '11';
+      renderClientes();
+    });
 
-      const img = document.createElement('img');
-      img.src = src;
-      img.style.maxWidth = '90%';
-      img.style.maxHeight = '90%';
-      img.style.border = '4px solid white';
-      img.style.borderRadius = '10px';
+    // Filtro por estado
+    document.getElementById('visitado-btn').addEventListener('click', () => {
+      estadoFiltrado = 'visitado';
+      renderClientes();
+    });
 
-      modal.appendChild(img);
-      document.body.appendChild(modal);
+    document.getElementById('no-visitado-btn').addEventListener('click', () => {
+      estadoFiltrado = 'no-visitado';
+      renderClientes();
+    });
 
-      modal.onclick = () => document.body.removeChild(modal);
-    }
   </script>
 
 </body>
