@@ -69,21 +69,46 @@
       font-size: 16px;
       cursor: pointer;
     }
+    .filters {
+      display: flex;
+      justify-content: space-between;
+      width: 90%;
+      margin: 20px auto;
+    }
+    #buscador {
+      width: 60%;
+      padding: 10px;
+      font-size: 16px;
+    }
+    #filtro-ruta {
+      padding: 10px;
+      font-size: 16px;
+      width: 30%;
+    }
   </style>
 </head>
 <body>
 
   <h2 style="text-align:center;">Clientes Ice : 7-8-9-10-11</h2>
 
-  <div style="text-align: center; margin-top: 30px;">
+  <!-- Filtros -->
+  <div class="filters">
     <input
       type="text"
       id="buscador"
       placeholder="Buscar por nombre, código o ruta..."
-      style="width: 50%; padding: 10px; font-size: 16px;"
       list="sugerencias"
     />
     <datalist id="sugerencias"></datalist>
+
+    <!-- Filtro por ruta -->
+    <select id="filtro-ruta">
+      <option value="">Filtrar por ruta</option>
+      <option value="08">08</option>
+      <option value="09">09</option>
+      <option value="10">10</option>
+      <option value="11">11</option>
+    </select>
   </div>
 
   <table>
@@ -127,79 +152,17 @@
     const db = firebase.database();
 
     const todosLosClientes = [
-  {
-    nombre: "jaime coelle marina",
-    codigo: "8050726",
-    ruta: "08",
-    ubicacion: "https://maps.app.goo.gl/cdQCsNwnzs5a97gN7",
-    requerimientos: "",
-    imagen: "https://i.postimg.cc/85n5x39D/cliente-prueba.jpg"
-  },
-  {
-    nombre: "ore quispe mirian",
-    codigo: "616326",
-    ruta: "08",
-    ubicacion: "https://maps.app.goo.gl/63X4gJ6jA2mJadGLA",
-    requerimientos: ""
-  },
-  {
-    nombre: "godoy bonilla emilia",
-    codigo: "513511",
-    ruta: "08",
-    ubicacion: "falta",
-    requerimientos: ""
-  },
-  {
-    nombre: "valdivia vargas aurea",
-    codigo: "8050729",
-    ruta: "08",
-    ubicacion: "https://maps.app.goo.gl/rxbiqn5ZFPNDZ43Q6",
-    requerimientos: ""
-  },
-  {
-    nombre: "villalobos minaya isabel",
-    codigo: "8050739",
-    ruta: "08",
-    ubicacion: "https://maps.app.goo.gl/PxPXWkpU5QF9w55v5",
-    requerimientos: ""
-  },
-  {
-    nombre: "bautista yamocca violeta",
-    codigo: "8049946",
-    ruta: "08",
-    ubicacion: "https://maps.app.goo.gl/3ZU2Fpg7LRYDYGPT8",
-    requerimientos: ""
-  },
-  {
-    nombre: "machahuay vda de c",
-    codigo: "628117",
-    ruta: "08",
-    ubicacion: "https://maps.app.goo.gl/dbDMxJDbhivn31Q77",
-    requerimientos: ""
-  },
-  {
-    nombre: "ccaico tomaylla sindy",
-    codigo: "1379941",
-    ruta: "08",
-    ubicacion: "https://maps.app.goo.gl/wYdT1vojFV4p8y8C9",
-    requerimientos: ""
-  },
-  {
-    nombre: "berna quispe antonia",
-    codigo: "603877",
-    ruta: "08",
-    ubicacion: "https://maps.app.goo.gl/31Trg2FX3wNP2rtP8",
-    requerimientos: ""
-  },
-  {
-    nombre: "flores huaranccay karol",
-    codigo: "1144521",
-    ruta: "08",
-    ubicacion: "https://maps.app.goo.gl/qN62PxxF7pic5hRr6",
-    requerimientos: ""
-  }
-];
-
+      { nombre: "jaime coelle marina", codigo: "8050726", ruta: "08", ubicacion: "https://maps.app.goo.gl/cdQCsNwnzs5a97gN7", requerimientos: "", imagen: "https://i.postimg.cc/85n5x39D/cliente-prueba.jpg" },
+      { nombre: "ore quispe mirian", codigo: "616326", ruta: "08", ubicacion: "https://maps.app.goo.gl/63X4gJ6jA2mJadGLA", requerimientos: "" },
+      { nombre: "godoy bonilla emilia", codigo: "513511", ruta: "08", ubicacion: "falta", requerimientos: "" },
+      { nombre: "valdivia vargas aurea", codigo: "8050729", ruta: "08", ubicacion: "https://maps.app.goo.gl/rxbiqn5ZFPNDZ43Q6", requerimientos: "" },
+      { nombre: "villalobos minaya isabel", codigo: "8050739", ruta: "08", ubicacion: "https://maps.app.goo.gl/PxPXWkpU5QF9w55v5", requerimientos: "" },
+      { nombre: "bautista yamocca violeta", codigo: "8049946", ruta: "08", ubicacion: "https://maps.app.goo.gl/3ZU2Fpg7LRYDYGPT8", requerimientos: "" },
+      { nombre: "machahuay vda de c", codigo: "628117", ruta: "08", ubicacion: "https://maps.app.goo.gl/dbDMxJDbhivn31Q77", requerimientos: "" },
+      { nombre: "ccaico tomaylla sindy", codigo: "1379941", ruta: "08", ubicacion: "https://maps.app.goo.gl/wYdT1vojFV4p8y8C9", requerimientos: "" },
+      { nombre: "berna quispe antonia", codigo: "603877", ruta: "08", ubicacion: "https://maps.app.goo.gl/31Trg2FX3wNP2rtP8", requerimientos: "" },
+      { nombre: "flores huaranccay karol", codigo: "1144521", ruta: "08", ubicacion: "https://maps.app.goo.gl/qN62PxxF7pic5hRr6", requerimientos: "" }
+    ];
 
     const passwordMap = {
       '07': '1234',
@@ -211,6 +174,7 @@
 
     const tbody = document.getElementById('clientes-body');
     const buscador = document.getElementById('buscador');
+    const filtroRuta = document.getElementById('filtro-ruta');
     const datalist = document.getElementById('sugerencias');
     const passwordModal = document.getElementById('password-modal');
     const passwordInput = document.getElementById('password-input');
@@ -231,8 +195,8 @@
             <span class="edit-icon" title="Editar">&#9998;</span>
           </td>
          <td>
-  ${cliente.imagen ? `<img src="${cliente.imagen}" style="width:60px;cursor:pointer;" onclick="mostrarImagen('${cliente.imagen}')">` : "Sin imagen"}
-</td>
+          ${cliente.imagen ? `<img src="${cliente.imagen}" style="width:60px;cursor:pointer;" onclick="mostrarImagen('${cliente.imagen}')">` : "Sin imagen"}
+          </td>
           <td><button id="btn-${cliente.codigo}" class="estado-btn">Cargando...</button></td>
         `;
         tbody.appendChild(tr);
@@ -310,6 +274,14 @@
         opt.value = `${c.nombre} (${c.codigo})`;
         datalist.appendChild(opt);
       });
+      renderClientes(filtrados);
+    });
+
+    filtroRuta.addEventListener('change', () => {
+      const rutaFiltro = filtroRuta.value;
+      const filtrados = todosLosClientes.filter(cliente => 
+        !rutaFiltro || cliente.ruta === rutaFiltro
+      );
       renderClientes(filtrados);
     });
 
