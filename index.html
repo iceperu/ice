@@ -4,19 +4,39 @@
   <meta charset="UTF-8">
   <title>Clientes Ice : 7-8-9-10-11</title>
   <style>
+    /* Estilo general de la página */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 20px;
+    }
+
     table {
       width: 90%;
       margin: 50px auto;
       border-collapse: collapse;
+      background-color: white;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
+
     th, td {
-      border: 1px solid #ccc;
-      padding: 10px;
+      border: 1px solid #ddd;
+      padding: 12px 15px;
       text-align: center;
     }
+
     th {
       background-color: #a8e6a6;
+      font-weight: bold;
     }
+
+    td {
+      background-color: #ffffff;
+      font-size: 14px;
+    }
+
+    /* Botones de estado */
     .estado-btn {
       padding: 8px 15px;
       border: none;
@@ -24,16 +44,22 @@
       color: white;
       font-weight: bold;
       cursor: pointer;
+      width: 100%;
+      font-size: 14px;
     }
+
     .visitado {
       background-color: green;
     }
+
     .no-visitado {
       background-color: red;
     }
+
     .edit-cell {
       position: relative;
     }
+
     .edit-icon {
       cursor: pointer;
       margin-left: 5px;
@@ -43,11 +69,13 @@
       top: 50%;
       transform: translateY(-50%);
     }
+
     .edit-input {
       width: 90%;
       font-size: 14px;
       padding: 4px;
     }
+
     .password-modal {
       display: none;
       position: fixed;
@@ -59,11 +87,13 @@
       color: white;
       border-radius: 10px;
     }
+
     .password-modal input {
       padding: 10px;
       margin-bottom: 10px;
       font-size: 16px;
     }
+
     .password-modal button {
       padding: 8px 16px;
       font-size: 16px;
@@ -77,35 +107,55 @@
       margin: 20px auto;
       width: 90%;
     }
+
     .filter-item {
       display: flex;
       align-items: center;
     }
+
     .filter-item select,
     .filter-item input {
       margin-left: 10px;
-      padding: 5px;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
     }
+
+    /* Filtro más grande y buscador más profesional */
+    #buscador {
+      width: 100%;
+      padding: 15px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      background-color: #f7f7f7;
+    }
+
+    #filtro-estado, #filtro-ruta {
+      width: 150px;
+    }
+
   </style>
 </head>
 <body>
 
   <h2 style="text-align:center;">Clientes Ice : 7-8-9-10-11</h2>
 
+  <!-- Filtros de búsqueda y estado -->
   <div class="filters">
-    <!-- Buscador a la izquierda -->
+    <!-- Buscador más grande a la izquierda -->
     <div class="filter-item" style="flex-grow: 1;">
       <input
         type="text"
         id="buscador"
         placeholder="Buscar por nombre, código o ruta..."
-        style="width: 100%; padding: 10px; font-size: 16px;"
         list="sugerencias"
       />
       <datalist id="sugerencias"></datalist>
     </div>
 
-    <!-- Filtros a la derecha -->
+    <!-- Filtro de estado y ruta -->
     <div class="filter-item">
       <label for="filtro-estado">Estado:</label>
       <select id="filtro-estado">
