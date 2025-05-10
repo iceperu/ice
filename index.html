@@ -216,6 +216,7 @@
     const submitPassword = document.getElementById('submit-password');
     const cancelPassword = document.getElementById('cancel-password');
 
+    // Renderizar todos los clientes sin filtros
     function renderClientes(filtrados) {
       tbody.innerHTML = '';
       filtrados.forEach(cliente => {
@@ -295,6 +296,7 @@
 
     renderClientes(todosLosClientes);
 
+    // Filtro de búsqueda
     buscador.addEventListener('input', (e) => {
       const texto = e.target.value.toLowerCase();
       datalist.innerHTML = '';
@@ -308,7 +310,7 @@
         opt.value = `${c.nombre} (${c.codigo})`;
         datalist.appendChild(opt);
       });
-      renderClientes(filtrados);
+      renderClientes(filtrados); // Renderiza solo los clientes filtrados
     });
 
     function mostrarImagen(src) {
