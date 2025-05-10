@@ -94,6 +94,7 @@
         <th>Ruta</th>
         <th>Ubicación</th>
         <th>Requerimientos</th>
+        <th>Imagen</th>
         <th>Estado</th>
       </tr>
     </thead>
@@ -126,22 +127,16 @@
     const db = firebase.database();
 
     const todosLosClientes = [
-      {
-        nombre: "jaime coelle marina",
-        codigo: "8050726",
-        ruta: "08",
-        ubicacion: "https://maps.app.goo.gl/cdQCsNwnzs5a97gN7",
-        requerimientos: "",
-        imagen: "https://drive.google.com/uc?export=view&id=1AOiQs78wyy_C5NZ3WwgyzJ5PiGOsWouB"
-      },
-      {
-        nombre: "ore quispe mirian",
-        codigo: "616326",
-        ruta: "08",
-        ubicacion: "https://maps.app.goo.gl/63X4gJ6jA2mJadGLA",
-        requerimientos: ""
-      },
-      // Agrega más clientes con "imagen" si quieres
+      { nombre: "jaime coelle marina", codigo: "8050726", ruta: "08", ubicacion: "https://maps.app.goo.gl/cdQCsNwnzs5a97gN7", requerimientos: "", imagen: "https://drive.google.com/uc?export=view&id=1AOiQs78wyy_C5NZ3WwgyzJ5PiGOsWouB" },
+      { nombre: "ore quispe mirian", codigo: "616326", ruta: "08", ubicacion: "https://maps.app.goo.gl/63X4gJ6jA2mJadGLA", requerimientos: "" },
+      { nombre: "godoy bonilla emilia", codigo: "513511", ruta: "08", ubicacion: "falta", requerimientos: "" },
+      { nombre: "valdivia vargas aurea", codigo: "8050729", ruta: "08", ubicacion: "https://maps.app.goo.gl/rxbiqn5ZFPNDZ43Q6", requerimientos: "" },
+      { nombre: "villalobos minaya isabel", codigo: "8050739", ruta: "08", ubicacion: "https://maps.app.goo.gl/PxPXWkpU5QF9w55v5", requerimientos: "" },
+      { nombre: "bautista yamocca violeta", codigo: "8049946", ruta: "08", ubicacion: "https://maps.app.goo.gl/3ZU2Fpg7LRYDYGPT8", requerimientos: "" },
+      { nombre: "machahuay vda de c", codigo: "628117", ruta: "08", ubicacion: "https://maps.app.goo.gl/dbDMxJDbhivn31Q77", requerimientos: "" },
+      { nombre: "ccaico tomaylla sindy", codigo: "1379941", ruta: "08", ubicacion: "https://maps.app.goo.gl/wYdT1vojFV4p8y8C9", requerimientos: "" },
+      { nombre: "berna quispe antonia", codigo: "603877", ruta: "08", ubicacion: "https://maps.app.goo.gl/31Trg2FX3wNP2rtP8", requerimientos: "" },
+      { nombre: "flores huaranccay karol", codigo: "1144521", ruta: "08", ubicacion: "https://maps.app.goo.gl/qN62PxxF7pic5hRr6", requerimientos: "" }
     ];
 
     const passwordMap = {
@@ -165,16 +160,16 @@
       filtrados.forEach(cliente => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>
-            ${cliente.nombre}
-            ${cliente.imagen ? `<br><img src="${cliente.imagen}" style="width:60px;cursor:pointer;" onclick="mostrarImagen('${cliente.imagen}')">` : ""}
-          </td>
+          <td>${cliente.nombre}</td>
           <td>${cliente.codigo}</td>
           <td>${cliente.ruta}</td>
           <td>${cliente.ubicacion === "falta" ? "Falta" : `<a href="${cliente.ubicacion}" target="_blank">Ver mapa</a>`}</td>
           <td id="req-${cliente.codigo}" class="edit-cell">
             <span class="req-text">${cliente.requerimientos || "Sin requerimientos"}</span>
             <span class="edit-icon" title="Editar">&#9998;</span>
+          </td>
+          <td>
+            ${cliente.imagen ? `<img src="${cliente.imagen}" style="width:60px;cursor:pointer;" onclick="mostrarImagen('${cliente.imagen}')">` : "Sin imagen"}
           </td>
           <td><button id="btn-${cliente.codigo}" class="estado-btn">Cargando...</button></td>
         `;
