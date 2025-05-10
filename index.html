@@ -152,31 +152,45 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const todosLosClientes = [ /* ... tus datos de clientes ... */ ];
+    let todosLosClientes = []; // Lista donde guardaremos los clientes
+    let rutaFiltrada = null;
+    let estadoFiltrado = null;
 
-    const passwordMap = {
-      '07': '1234',
-      '08': '5678',
-      '09': '9101',
-      '10': '1121',
-      '11': '3141'
-    };
+    // Obtener todos los clientes desde Firebase
+    db.ref('clientes').once('value').then(snapshot => {
+      snapshot.forEach(clienteSnapshot => {
+        const cliente = clienteSnapshot.val();
+        todosLosClientes.push(cliente);
+      });
+
+      renderClientes();
+      actualizarSugerencias();
+    });
+
+    // Actualizar las sugerencias del datalist con los nombres y códigos
+    function actualizarSugerencias() {
+      const datalist = document.getElementById('sugerencias');
+      datalist.innerHTML = ''; // Limpiar datalist
+
+      todosLosClientes.forEach(cliente => {
+        const option = document.createElement('option');
+        option.value = cliente.nombre;
+        datalist.appendChild(option);
+      });
+    }
 
     const tbody = document.getElementById('clientes-body');
     const buscador = document.getElementById('buscador');
-    const datalist = document.getElementById('sugerencias');
     const passwordModal = document.getElementById('password-modal');
     const passwordInput = document.getElementById('password-input');
     const submitPassword = document.getElementById('submit-password');
     const cancelPassword = document.getElementById('cancel-password');
 
-    let clientesFiltrados = todosLosClientes;
-    let rutaFiltrada = null;
-    let estadoFiltrado = null;
-
+    // Renderizar los clientes según el filtro
     function renderClientes() {
-      tbody.innerHTML = '';
-      const filtrados = clientesFiltrados.filter(cliente => {
+      tbody.innerHTML = ''; // Limpiar la tabla
+
+      const filtrados = todosLosClientes.filter(cliente => {
         const rutaCoincide = rutaFiltrada ? cliente.ruta === rutaFiltrada : true;
         const estadoRef = db.ref('clientes/' + cliente.codigo + '/estado');
         let estadoCliente = 'no-visitado';
@@ -264,12 +278,10 @@
       });
     }
 
-    renderClientes();
-
+    // Filtrar por búsqueda en el buscador
     buscador.addEventListener('input', (e) => {
       const texto = e.target.value.toLowerCase();
-      datalist.innerHTML = '';
-      clientesFiltrados = todosLosClientes.filter(c =>
+      todosLosClientes = todosLosClientes.filter(c =>
         c.nombre.toLowerCase().includes(texto) ||
         c.codigo.includes(texto) ||
         c.ruta.includes(texto)
@@ -309,7 +321,6 @@
       estadoFiltrado = 'no-visitado';
       renderClientes();
     });
-
   </script>
 
 </body>
