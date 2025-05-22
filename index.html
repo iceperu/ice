@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Clientes Ice : 7-8-9-10-11</title>
+  <style>
+    table {
+      width: 90%;
+      margin: 50px auto;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background-color: #a8e6a6;
+    }
+    .estado-btn {
+      padding: 8px 15px;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .visitado {
+      background-color: green;
+    }
+    .no-visitado {
+      background-color: red;
+    }
+    .edit-cell {
+      position: relative;
+    }
+    .edit-icon {
+      cursor: pointer;
+      margin-left: 5px;
+      color: blue;
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .edit-input {
+      width: 90%;
+      font-size: 14px;
+      padding: 4px;
+    }
+
+    #login-modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 30px;
+      box-shadow: 0 0 10px #333;
+      border-radius: 8px;
+      z-index: 10000;
+      width: 300px;
+      text-align: center;
+    }
+    #login-modal input {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 16px;
+    }
+    #login-modal button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #logout-btn {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      padding: 8px 15px;
+      background: #f44336;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      display: none;
+      z-index: 10001;
+    }
+    /* Disabled style for buttons */
+    .estado-btn[disabled] {
+      background-color: grey !important;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    .edit-icon.disabled {
+      color: grey;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h2 style="text-align:center;">Clientes Ice : 7-8-9-10-11</h2>
+
+  <div style="text-align: center; margin-top: 30px;">
+    <input
+      type="text"
+      id="buscador"
+      placeholder="Buscar por nombre, código o ruta..."
+      style="width: 20%; padding: 10px; font-size: 16px;"
+    />
+    <select id="filtroRuta" style="padding: 10px; font-size: 16px;">
+      <option value="">Filtrar por ruta</option>
+      <option value="07">Ruta 07</option>
+      <option value="08">Ruta 08</option>
+      <option value="09">Ruta 09</option>
+      <option value="10">Ruta 10</option>
+      <option value="11">Ruta 11</option>
+    </select>
+    <select id="filtroEstado" style="padding: 10px; font-size: 16px;">
+      <option value="">Filtrar por estado</option>
+      <option value="visitado">Visitado</option>
+      <option value="no-visitado">No visitado</option>
+    </select>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Código</th>
+        <th>Ruta</th>
+        <th>Ubicación</th>
+        <th>Requerimientos</th>
+        <th>Imagen</th>
+        <th>Estado</th>
+      </tr>
+    </thead>
+    <tbody id="clientes-body"></tbody>
+  </table>
+
+  <!-- Login Modal -->
+  <div id="login-modal">
+    <h3>Iniciar sesión</h3>
+    <input type="text" id="login-user" placeholder="Usuario" autocomplete="off" />
+    <input type="password" id="login-pass" placeholder="Contraseña" />
+    <button id="login-btn">Entrar</button>
+  </div>
+
+  <button id="logout-btn">Cerrar sesión</button>
+
+  <script>
+    // Clientes y datos originales
+    const todosLosClientes = [
+      {nombre: "jaime coelle marina", codigo: "8050726", ruta: "08", ubicacion: "https://maps.app.goo.gl/cdQCsNwnzs5a97gN7", requerimientos: "", imagen: "https://i.postimg.cc/85n5x39D/cliente-prueba.jpg"},
+      {nombre: "ore quispe mirian", codigo: "616326", ruta: "08", ubicacion: "https://maps.app.goo.gl/63X4gJ6jA2mJadGLA", requerimientos: ""},
+      {nombre: "godoy bonilla emilia", codigo: "513511", ruta: "08", ubicacion: "falta", requerimientos: ""},
+      {nombre: "valdivia vargas aurea", codigo: "8050729", ruta: "08", ubicacion: "https://maps.app.goo.gl/rxbiqn5ZFPNDZ43Q6", requerimientos: ""},
+      {nombre: "villalobos minaya isabel", codigo: "8050739", ruta: "08", ubicacion: "https://maps.app.goo.gl/PxPXWkpU5QF9w55v5", requerimientos: ""},
+      {nombre: "bautista yamocca violeta", codigo: "8049946", ruta: "08", ubicacion: "https://maps.app.goo.gl/3ZU2Fpg7LRYDYGPT8", requerimientos: ""},
+      {nombre: "machahuay vda de c", codigo: "628117", ruta: "08", ubicacion: "https://maps.app.goo.gl/dbDMxJDbhivn31Q77", requerimientos: ""},
+      {nombre: "ccaico tomaylla sindy", codigo: "1379941", ruta: "08", ubicacion: "https://maps.app.goo.gl/wYdT1vojFV4p8y8C9", requerimientos: ""},
+      {nombre: "berna quispe antonia", codigo: "603877", ruta: "08", ubicacion: "https://maps.app.goo.gl/31Trg2FX3wNP2rtP8", requerimientos: ""},
+      {nombre: "flores huaranccay karol", codigo: "1144521", ruta: "08", ubicacion: "https://maps.app.goo.gl/qN62PxxF7pic5hRr6", requerimientos: ""},
+      {nombre: "bajalqui espinoza marisol", codigo: "1142982", ruta: "08", ubicacion: "falta", requerimientos: ""},
+      {nombre: "balboa alva marilu", codigo: "1019669", ruta: "08", ubicacion: "falta", requerimientos: "", imagen: "falta"},
+      {nombre: "palomino espino yesenia", codigo: "674239", ruta: "08", ubicacion: "fata", requerimientos: "", imagen: "falta"},
+      {nombre: "enciso martinez tania lisbeth", codigo: "1177110", ruta: "08", ubicacion: "falta", requerimientos: "", imagen: "falta"},
+      {nombre: "victoria enciso de la cruz", codigo: "991465", ruta: "08", ubicacion: "fatla", requerimientos: "", imagen: "falta"},
+      {nombre: "paquiyauri huamanchao c", codigo: "625378", ruta: "08", ubicacion: "falta", requerimientos: "", imagen: "falta"},
+      {nombre: "aguirre quispe marcelina", codigo: "597692", ruta: "08", ubicacion: "falta", requerimientos: "", imagen: "falta"},
+      {nombre: "fernandez palomino teodora", codigo: "1117502", ruta: "08", ubicacion: "falta", requerimientos: "", imagen: "falta"},
+      {nombre: "chanhualla de paredes rosa", codigo: "8050223", ruta: "08", ubicacion: "falta", requerimientos: "", imagen: "falta"},
+      {nombre: "maria luisa ochoa valladolid", codigo: "7733424", ruta: "08", ubicacion: "falta", requerimientos: "", imagen: "falta"},
+      {nombre: "cisneros arango lisbeth n", codigo: "8050735", ruta: "08", ubicacion: "falta", requerimientos: "", imagen: "falta"},
+      {nombre: "paredez rojas marina", codigo: "8050224", ruta: "08", ubicacion: "falta", requerimientos: "", imagen: "falta"},
+      {nombre: "alfaro de gutierrez l", codigo: "654795", ruta: "08", ubicacion: "falta", requerimientos: "", imagen: "falta"}
+    ];
+
+    let estados = JSON.parse(localStorage.getItem('estadosClientes')) || {};
+    let requerimientos = JSON.parse(localStorage.getItem('requerimientosClientes')) || {};
+
+    const usuarios = {
+      admin: {password: 'admin123', ruta: 'all'},
+      vendedor07: {password: 'pass07', ruta: '07'},
+      vendedor08: {password: '1234', ruta: '08'},
+      vendedor09: {password: 'pass09', ruta: '09'},
+      vendedor10: {password: 'pass10', ruta: '10'},
+      vendedor11: {password: 'pass11', ruta: '11'},
+    };
+
+    let usuarioActual = localStorage.getItem('usuarioActual') || null;
+
+    const tbody = document.getElementById('clientes-body');
+    const buscador = document.getElementById('buscador');
+    const filtroRuta = document.getElementById('filtroRuta');
+    const filtroEstado = document.getElementById('filtroEstado');
+    const loginModal = document.getElementById('login-modal');
+    const loginUser = document.getElementById('login-user');
+    const loginPass = document.getElementById('login-pass');
+    const loginBtn = document.getElementById('login-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+
+    function renderClientes(listaClientes) {
+      tbody.innerHTML = '';
+      listaClientes.forEach(cliente => {
+        const estadoCliente = estados[cliente.codigo] || 'no-visitado';
+        const requerimientoCliente = requerimientos[cliente.codigo] || cliente.requerimientos || '';
+        const puedeEditar = puedeEditarCliente(cliente.ruta);
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${cliente.nombre}</td>
+          <td>${cliente.codigo}</td>
+          <td>${cliente.ruta}</td>
+          <td>${cliente.ubicacion === "falta" ? "Falta" : `<a href="${cliente.ubicacion}" target="_blank">Ver mapa</a>`}</td>
+          <td id="req-${cliente.codigo}" class="edit-cell">
+            <span class="req-text">${requerimientoCliente.trim() === '' ? "Sin requerimientos" : requerimientoCliente}</span>
+            ${puedeEditar ? '<span class="edit-icon" title="Editar">&#9998;</span>' : '<span class="edit-icon disabled" title="No puedes editar">&#9998;</span>'}
+          </td>
+          <td>
+            ${cliente.imagen && cliente.imagen !== 'falta' ? `<img src="${cliente.imagen}" style="width:60px;cursor:pointer;" onclick="mostrarImagen('${cliente.imagen}')">` : "Sin imagen"}
+          </td>
+          <td>
+            ${puedeEditar 
+              ? `<button id="btn-${cliente.codigo}" class="estado-btn ${estadoCliente}">${estadoCliente === 'visitado' ? 'Visitado' : 'No visitado'}</button>`
+              : `<button disabled class="estado-btn ${estadoCliente}">${estadoCliente === 'visitado' ? 'Visitado' : 'No visitado'}</button>`
+            }
+          </td>
+        `;
+        tbody.appendChild(tr);
+
+        // Solo agregar eventos si puede editar
+        if (puedeEditar) {
+          const btnEstado = document.getElementById(`btn-${cliente.codigo}`);
+          btnEstado.addEventListener('click', () => {
+            estados[cliente.codigo] = estados[cliente.codigo] === 'visitado' ? 'no-visitado' : 'visitado';
+            localStorage.setItem('estadosClientes', JSON.stringify(estados));
+            btnEstado.className = 'estado-btn ' + estados[cliente.codigo];
+            btnEstado.textContent = estados[cliente.codigo] === 'visitado' ? 'Visitado' : 'No visitado';
+          });
+
+          const tdReq = document.getElementById(`req-${cliente.codigo}`);
+          const editIcon = tdReq.querySelector('.edit-icon');
+          const spanReq = tdReq.querySelector('.req-text');
+          if(editIcon){
+            editIcon.addEventListener('click', () => {
+              const input = document.createElement('input');
+              input.type = 'text';
+              input.value = requerimientos[cliente.codigo] || cliente.requerimientos || '';
+              input.classList.add('edit-input');
+              tdReq.innerHTML = '';
+              tdReq.appendChild(input);
+              input.focus();
+
+              input.addEventListener('blur', () => {
+                const nuevoReq = input.value.trim();
+                requerimientos[cliente.codigo] = nuevoReq;
+                localStorage.setItem('requerimientosClientes', JSON.stringify(requerimientos));
+                tdReq.innerHTML = `
+                  <span class="req-text">${nuevoReq === '' ? "Sin requerimientos" : nuevoReq}</span>
+                  <span class="edit-icon" title="Editar">&#9998;</span>
+                `;
+                tdReq.querySelector('.edit-icon').addEventListener('click', () => {
+                  input.focus();
+                });
+              });
+            });
+          }
+        }
+      });
+    }
+
+    // Filtrar clientes: ahora sí muestran todas las rutas, el filtro por ruta sigue activo igual
+    function filtrarClientes() {
+      let filtroTxt = buscador.value.toLowerCase();
+      let ruta = filtroRuta.value;
+      let estado = filtroEstado.value;
+
+      // Mostrar todos los clientes (sin filtro por usuario), solo filtro por inputs
+      let clientesFiltrados = todosLosClientes.filter(c => {
+        let coincideBusqueda =
+          c.nombre.toLowerCase().includes(filtroTxt) ||
+          c.codigo.includes(filtroTxt) ||
+          c.ruta.includes(filtroTxt);
+
+        let coincideRuta = ruta ? c.ruta === ruta : true;
+        let estadoCliente = estados[c.codigo] || 'no-visitado';
+        let coincideEstado = estado ? (estado === estadoCliente) : true;
+
+        return coincideBusqueda && coincideRuta && coincideEstado;
+      });
+
+      renderClientes(clientesFiltrados);
+    }
+
+    // Ahora, para editar, el usuario solo puede si es admin o la ruta es suya
+    function puedeEditarCliente(rutaCliente) {
+      if (!usuarioActual) return false;
+      const user = usuarios[usuarioActual];
+      if (!user) return false;
+      return user.ruta === 'all' || user.ruta === rutaCliente;
+    }
+
+    function mostrarImagen(url) {
+      window.open(url, '_blank');
+    }
+
+    function mostrarLogin() {
+      loginModal.style.display = 'block';
+      logoutBtn.style.display = 'none';
+    }
+    function ocultarLogin() {
+      loginModal.style.display = 'none';
+      logoutBtn.style.display = 'block';
+    }
+
+    function login(usuario, pass) {
+      if (usuarios[usuario] && usuarios[usuario].password === pass) {
+        usuarioActual = usuario;
+        localStorage.setItem('usuarioActual', usuarioActual);
+        ocultarLogin();
+        filtrarClientes();
+      } else {
+        alert('Usuario o contraseña incorrectos');
+      }
+    }
+
+    function logout() {
+      usuarioActual = null;
+      localStorage.removeItem('usuarioActual');
+      mostrarLogin();
+      tbody.innerHTML = '';
+      logoutBtn.style.display = 'none';
+    }
+
+    loginBtn.addEventListener('click', () => {
+      login(loginUser.value.trim(), loginPass.value.trim());
+      loginUser.value = '';
+      loginPass.value = '';
+    });
+
+    logoutBtn.addEventListener('click', logout);
+
+    if (usuarioActual) {
+      ocultarLogin();
+      filtrarClientes();
+    } else {
+      mostrarLogin();
+    }
+
+    buscador.addEventListener('input', filtrarClientes);
+    filtroRuta.addEventListener('change', filtrarClientes);
+    filtroEstado.addEventListener('change', filtrarClientes);
+  </script>
+</body>
+</html>
