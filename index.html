@@ -17,10 +17,36 @@
     th {
       background-color: #a8e6a6;
     }
+    .estado-btn {
+      padding: 8px 15px;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .visitado {
+      background-color: green;
+    }
+    .no-visitado {
+      background-color: red;
+    }
+    .edit-cell {
+      position: relative;
+    }
     .edit-icon {
       cursor: pointer;
+      margin-left: 5px;
       color: blue;
-      font-size: 18px;
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .edit-input {
+      width: 90%;
+      font-size: 14px;
+      padding: 4px;
     }
     .password-modal {
       display: none;
@@ -29,31 +55,50 @@
       left: 50%;
       transform: translate(-50%, -50%);
       padding: 20px;
-      background-color: rgba(0, 0, 0, 0.8);
+      background-color: rgba(0, 0, 0, 0.7);
       color: white;
       border-radius: 10px;
-      z-index: 9999;
     }
-    .password-modal input, .password-modal button {
+    .password-modal input {
       padding: 10px;
+      margin-bottom: 10px;
       font-size: 16px;
-      margin-top: 10px;
     }
-    .save-btn {
-      margin-top: 10px;
-      padding: 8px 14px;
-      font-size: 14px;
+    .password-modal button {
+      padding: 8px 16px;
+      font-size: 16px;
       cursor: pointer;
-      background-color: #28a745;
-      color: white;
-      border: none;
-      border-radius: 5px;
     }
   </style>
 </head>
 <body>
 
   <h2 style="text-align:center;">Clientes Ice : 7-8-9-10-11</h2>
+
+  <div style="text-align: center; margin-top: 30px;">
+    <input
+      type="text"
+      id="buscador"
+      placeholder="Buscar por nombre, código o ruta..."
+      style="width: 20%; padding: 10px; font-size: 16px;"
+    />
+
+    <!-- Filtros adicionales -->
+    <select id="filtroRuta" style="padding: 10px; font-size: 16px;">
+      <option value="">Filtrar por ruta</option>
+      <option value="07">Ruta 07</option>
+      <option value="08">Ruta 08</option>
+      <option value="09">Ruta 09</option>
+      <option value="10">Ruta 10</option>
+      <option value="11">Ruta 11</option>
+    </select>
+
+    <select id="filtroEstado" style="padding: 10px; font-size: 16px;">
+      <option value="">Filtrar por estado</option>
+      <option value="visitado">Visitado</option>
+      <option value="no-visitado">No visitado</option>
+    </select>
+  </div>
 
   <table>
     <thead>
@@ -65,7 +110,6 @@
         <th>Requerimientos</th>
         <th>Imagen</th>
         <th>Estado</th>
-        <th>Editar</th>
       </tr>
     </thead>
     <tbody id="clientes-body"></tbody>
@@ -74,7 +118,6 @@
   <div id="password-modal" class="password-modal">
     <h3>Introduce la contraseña</h3>
     <input type="password" id="password-input" placeholder="Contraseña" />
-    <br />
     <button id="submit-password">Aceptar</button>
     <button id="cancel-password">Cancelar</button>
   </div>
@@ -90,22 +133,135 @@
       projectId: "iceperu-5613a",
       storageBucket: "iceperu-5613a.appspot.com",
       messagingSenderId: "160752506128",
-      appId: "1:160752506128:web:a2781301bd763db4388195"
+      appId: "1:160752506128:web:a2781301bd763db4388195",
+      measurementId: "G-WD516HZ80N"
     };
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
     const todosLosClientes = [
-      {
+        {
     nombre: "jaime coelle marina",
     codigo: "8050726",
     ruta: "08",
     ubicacion: "https://maps.app.goo.gl/cdQCsNwnzs5a97gN7",
     requerimientos: "",
     imagen: "https://i.postimg.cc/85n5x39D/cliente-prueba.jpg"
+  },
+  {
+    nombre: "ore quispe mirian",
+    codigo: "616326",
+    ruta: "08",
+    ubicacion: "https://maps.app.goo.gl/63X4gJ6jA2mJadGLA",
+    requerimientos: ""
+  },
+  {
+    nombre: "godoy bonilla emilia",
+    codigo: "513511",
+    ruta: "08",
+    ubicacion: "falta",
+    requerimientos: ""
+  },
+  // ... (continúa con todos los demás)
+  {
+    nombre: "alfaro de gutierrez l",
+    codigo: "654795",
+    ruta: "08",
+    ubicacion: "falta",
+    requerimientos: "",
+    imagen: "falta"
   }
-                             ];
+    ];
+
+    const tbody = document.getElementById('clientes-body');
+    const buscador = document.getElementById('buscador');
+    const filtroRuta = document.getElementById('filtroRuta');
+    const filtroEstado = document.getElementById('filtroEstado');
+    const passwordModal = document.getElementById('password-modal');
+    const passwordInput = document.getElementById('password-input');
+    const submitPassword = document.getElementById('submit-password');
+    const cancelPassword = document.getElementById('cancel-password');
+
+    function renderClientes(filtrados) {
+      tbody.innerHTML = '';
+      filtrados.forEach(cliente => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${cliente.nombre}</td>
+          <td>${cliente.codigo}</td>
+          <td>${cliente.ruta}</td>
+          <td>${cliente.ubicacion === "falta" ? "Falta" : `<a href="${cliente.ubicacion}" target="_blank">Ver mapa</a>`}</td>
+          <td id="req-${cliente.codigo}" class="edit-cell">
+            <span class="req-text">${cliente.requerimientos || "Sin requerimientos"}</span>
+            <span class="edit-icon" title="Editar">&#9998;</span>
+          </td>
+          <td>
+            ${cliente.imagen ? `<img src="${cliente.imagen}" style="width:60px;cursor:pointer;" onclick="mostrarImagen('${cliente.imagen}')">` : "Sin imagen"}
+          </td>
+          <td><button id="btn-${cliente.codigo}" class="estado-btn">Cargando...</button></td>
+        `;
+        tbody.appendChild(tr);
+
+        const btn = document.getElementById(`btn-${cliente.codigo}`);
+        const estadoRef = db.ref('clientes/' + cliente.codigo + '/estado');
+        estadoRef.on('value', snapshot => {
+          const estado = snapshot.val() || 'no-visitado';
+          btn.textContent = estado === 'visitado' ? 'Visitado' : 'No visitado';
+          btn.className = 'estado-btn ' + estado;
+        });
+
+        btn.addEventListener('click', () => {
+          const ruta = cliente.ruta;
+          passwordModal.style.display = 'block';
+          submitPassword.onclick = () => {
+            if (passwordInput.value === passwordMap[ruta]) {
+              estadoRef.once('value').then(snapshot => {
+                const nuevoEstado = snapshot.val() === 'visitado' ? 'no-visitado' : 'visitado';
+                estadoRef.set(nuevoEstado);
+              });
+              passwordModal.style.display = 'none';
+            } else {
+              alert('Contraseña incorrecta');
+            }
+          };
+          cancelPassword.onclick = () => {
+            passwordModal.style.display = 'none';
+          };
+        });
+
+        const reqCell = document.getElementById(`req-${cliente.codigo}`);
+        const editIcon = reqCell.querySelector('.edit-icon');
+        const reqText = reqCell.querySelector('.req-text');
+        const reqRef = db.ref('clientes/' + cliente.codigo + '/requerimientos');
+
+        reqRef.on('value', snapshot => {
+          reqText.textContent = snapshot.val() || "Sin requerimientos";
+        });
+
+        editIcon.addEventListener('click', () => {
+          const currentText = reqText.textContent === "Sin requerimientos" ? "" : reqText.textContent;
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.className = 'edit-input';
+          input.value = currentText;
+          reqCell.innerHTML = '';
+          reqCell.appendChild(input);
+          input.focus();
+          input.addEventListener('blur', () => {
+            const nuevoTexto = input.value.trim();
+            reqRef.set(nuevoTexto);
+            reqCell.innerHTML = `
+              <span class="req-text">${nuevoTexto || "Sin requerimientos"}</span>
+              <span class="edit-icon" title="Editar">&#9998;</span>
+            `;
+            renderClientes(filtrados);
+          });
+        });
+      });
+    }
+
+    renderClientes(todosLosClientes);
 
     const passwordMap = {
       '07': 'tuContraseña07',
@@ -115,86 +271,70 @@
       '11': 'tuContraseña11'
     };
 
-    const tbody = document.getElementById('clientes-body');
-    const passwordModal = document.getElementById('password-modal');
-    const passwordInput = document.getElementById('password-input');
-    const submitPassword = document.getElementById('submit-password');
-    const cancelPassword = document.getElementById('cancel-password');
+    // Filtro por texto (buscador)
+    buscador.addEventListener('input', (e) => {
+      const texto = e.target.value.toLowerCase();
+      const filtrados = todosLosClientes.filter(c =>
+        c.nombre.toLowerCase().includes(texto) ||
+        c.codigo.includes(texto) ||
+        c.ruta.includes(texto)
+      );
+      renderClientes(filtrados);
+    });
 
-    function renderClientes(clientes) {
-      tbody.innerHTML = '';
-      clientes.forEach(cliente => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${cliente.nombre}</td>
-          <td>${cliente.codigo}</td>
-          <td>${cliente.ruta}</td>
-          <td>${cliente.ubicacion === "falta" ? "Falta" : `<a href="${cliente.ubicacion}" target="_blank">Ver mapa</a>`}</td>
-          <td class="req" id="req-${cliente.codigo}">Cargando...</td>
-          <td>${cliente.imagen ? `<img src="${cliente.imagen}" style="width:60px;">` : 'Sin imagen'}</td>
-          <td class="estado" id="estado-${cliente.codigo}">Cargando...</td>
-          <td><span class="edit-icon" data-codigo="${cliente.codigo}" title="Editar fila">&#9998;</span></td>
-        `;
-        tbody.appendChild(tr);
+    // Filtro por ruta
+    filtroRuta.addEventListener('change', () => {
+      const ruta = filtroRuta.value;
+      let filtrados = todosLosClientes.filter(c =>
+        (ruta ? c.ruta === ruta : true)
+      );
+      renderClientes(filtrados);
+    });
 
-        const estadoRef = db.ref('clientes/' + cliente.codigo + '/estado');
-        estadoRef.on('value', snap => {
-          document.getElementById(`estado-${cliente.codigo}`).textContent = snap.val() || 'no-visitado';
-        });
-
-        const reqRef = db.ref('clientes/' + cliente.codigo + '/requerimientos');
-        reqRef.on('value', snap => {
-          document.getElementById(`req-${cliente.codigo}`).textContent = snap.val() || 'Sin requerimientos';
-        });
-      });
-
-      document.querySelectorAll('.edit-icon').forEach(icon => {
-        icon.addEventListener('click', () => {
-          const codigo = icon.getAttribute('data-codigo');
-          const cliente = todosLosClientes.find(c => c.codigo === codigo);
-          const ruta = cliente.ruta;
-          passwordInput.value = '';
-          passwordModal.style.display = 'block';
-
-          submitPassword.onclick = () => {
-            if (passwordInput.value === passwordMap[ruta]) {
-              passwordModal.style.display = 'none';
-
-              const reqCell = document.getElementById(`req-${codigo}`);
-              const estadoCell = document.getElementById(`estado-${codigo}`);
-              const reqActual = reqCell.textContent === "Sin requerimientos" ? "" : reqCell.textContent;
-              const estadoActual = estadoCell.textContent;
-
-              reqCell.innerHTML = `<input type="text" id="input-req-${codigo}" value="${reqActual}" style="width:90%;">`;
-              estadoCell.innerHTML = `
-                <select id="select-estado-${codigo}">
-                  <option value="visitado" ${estadoActual === 'visitado' ? 'selected' : ''}>Visitado</option>
-                  <option value="no-visitado" ${estadoActual === 'no-visitado' ? 'selected' : ''}>No visitado</option>
-                </select>
-                <button class="save-btn" onclick="guardarCambios('${codigo}')">Guardar</button>
-              `;
-            } else {
-              alert('Contraseña incorrecta');
-            }
-          };
-
-          cancelPassword.onclick = () => {
-            passwordModal.style.display = 'none';
+    // Filtro por estado
+    filtroEstado.addEventListener('change', () => {
+      const estado = filtroEstado.value;
+      const promises = todosLosClientes.map(cliente => {
+        return db.ref('clientes/' + cliente.codigo + '/estado').once('value').then(snapshot => {
+          return {
+            ...cliente,
+            estado: snapshot.val() || 'no-visitado'
           };
         });
       });
+
+      Promise.all(promises).then(clientesConEstado => {
+        const filtrados = clientesConEstado.filter(c => estado ? c.estado === estado : true);
+        renderClientes(filtrados);
+      });
+    });
+
+    function mostrarImagen(src) {
+      const modal = document.createElement('div');
+      modal.style.position = 'fixed';
+      modal.style.top = '0';
+      modal.style.left = '0';
+      modal.style.width = '100%';
+      modal.style.height = '100%';
+      modal.style.backgroundColor = 'rgba(0,0,0,0.8)';
+      modal.style.display = 'flex';
+      modal.style.alignItems = 'center';
+      modal.style.justifyContent = 'center';
+      modal.style.zIndex = '9999';
+
+      const img = document.createElement('img');
+      img.src = src;
+      img.style.maxWidth = '90%';
+      img.style.maxHeight = '90%';
+      img.style.border = '4px solid white';
+      img.style.borderRadius = '10px';
+
+      modal.appendChild(img);
+      document.body.appendChild(modal);
+
+      modal.onclick = () => document.body.removeChild(modal);
     }
-
-    function guardarCambios(codigo) {
-      const req = document.getElementById(`input-req-${codigo}`).value.trim();
-      const estado = document.getElementById(`select-estado-${codigo}`).value;
-
-      db.ref('clientes/' + codigo + '/requerimientos').set(req);
-      db.ref('clientes/' + codigo + '/estado').set(estado);
-      alert('Cambios guardados correctamente');
-    }
-
-    renderClientes(todosLosClientes);
   </script>
+
 </body>
 </html>
