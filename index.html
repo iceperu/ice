@@ -99,59 +99,6 @@
       pointer-events: none;
     }
   </style>
-  
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
-  <script>
-    // Configuración Firebase (reemplaza con tus datos)
-    const firebaseConfig = {
-      apiKey: "TU_API_KEY",
-      authDomain: "TU_AUTH_DOMAIN",
-      databaseURL: "TU_DATABASE_URL",
-      projectId: "TU_PROJECT_ID",
-      storageBucket: "TU_STORAGE_BUCKET",
-      messagingSenderId: "TU_MESSAGING_SENDER_ID",
-      appId: "TU_APP_ID"
-    };
-
-    // Inicializa Firebase
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-
-    // Funciones para sincronizar con Firebase
-    async function cargarEstadosFirebase() {
-      try {
-        const snapshot = await database.ref('estadosClientes').once('value');
-        return snapshot.val() || {};
-      } catch (error) {
-        console.error('Error al cargar estados desde Firebase:', error);
-        return {};
-      }
-    }
-
-    async function cargarRequerimientosFirebase() {
-      try {
-        const snapshot = await database.ref('requerimientosClientes').once('value');
-        return snapshot.val() || {};
-      } catch (error) {
-        console.error('Error al cargar requerimientos desde Firebase:', error);
-        return {};
-      }
-    }
-
-    function guardarEstadoFirebase(codigo, estado) {
-      database.ref('estadosClientes/' + codigo).set(estado).catch(err => {
-        console.error('Error guardando estado en Firebase:', err);
-      });
-    }
-
-    function guardarRequerimientoFirebase(codigo, req) {
-      database.ref('requerimientosClientes/' + codigo).set(req).catch(err => {
-        console.error('Error guardando requerimiento en Firebase:', err);
-      });
-    }
-  </script>
 </head>
 <body>
 
@@ -204,7 +151,26 @@
 
   <button id="logout-btn">Cerrar sesión</button>
 
+  <!-- Firebase SDK -->
+ <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
   <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBMUS3oqZOtUsuxFsVRjwXRA7HKA2pdnKY",
+      authDomain: "iceperu-5613a.firebaseapp.com",
+      databaseURL: "https://iceperu-5613a-default-rtdb.firebaseio.com",
+      projectId: "iceperu-5613a",
+      storageBucket: "iceperu-5613a.appspot.com",
+      messagingSenderId: "160752506128",
+      appId: "1:160752506128:web:a2781301bd763db4388195",
+      measurementId: "G-WD516HZ80N"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+
     // Clientes y datos originales
     const todosLosClientes = [
       {nombre: "jaime coelle marina", codigo: "8050726", ruta: "08", ubicacion: "https://maps.app.goo.gl/cdQCsNwnzs5a97gN7", requerimientos: "", imagen: "https://i.postimg.cc/85n5x39D/cliente-prueba.jpg"},
@@ -232,8 +198,8 @@
       {nombre: "alfaro de gutierrez l", codigo: "654795", ruta: "08", ubicacion: "falta", requerimientos: "", imagen: "falta"}
     ];
 
-    let estados = {};
-    let requerimientos = {};
+    let estados = JSON.parse(localStorage.getItem('estadosClientes')) || {};
+    let requerimientos = JSON.parse(localStorage.getItem('requerimientosClientes')) || {};
 
     const usuarios = {
       admin: {password: 'admin123', ruta: 'all'},
@@ -250,114 +216,194 @@
     const buscador = document.getElementById('buscador');
     const filtroRuta = document.getElementById('filtroRuta');
     const filtroEstado = document.getElementById('filtroEstado');
+
     const loginModal = document.getElementById('login-modal');
     const loginUser = document.getElementById('login-user');
     const loginPass = document.getElementById('login-pass');
     const loginBtn = document.getElementById('login-btn');
     const logoutBtn = document.getElementById('logout-btn');
 
-    function renderClientes(listaClientes) {
-      tbody.innerHTML = '';
-      listaClientes.forEach(cliente => {
-        const estadoCliente = estados[cliente.codigo] || 'no-visitado';
-        const requerimientoCliente = requerimientos[cliente.codigo] || cliente.requerimientos || '';
-        const puedeEditar = puedeEditarCliente(cliente.ruta);
+    // Funciones para guardar en Firebase
+    function guardarEstadoFirebase(codigo, estado) {
+      database.ref('estadosClientes/' + codigo).set(estado).catch(err => {
+        console.error('Error guardando estado en Firebase:', err);
+      });
+    }
 
+    function guardarRequerimientoFirebase(codigo, req) {
+      database.ref('requerimientosClientes/' + codigo).set(req).catch(err => {
+        console.error('Error guardando requerimiento en Firebase:', err);
+      });
+    }
+
+    // Función para mostrar clientes según filtros y usuario
+    function filtrarClientes() {
+      tbody.innerHTML = '';
+
+      const textoBuscado = buscador.value.toLowerCase();
+      const rutaSeleccionada = filtroRuta.value;
+      const estadoSeleccionado = filtroEstado.value;
+
+      const clienteFiltrados = todosLosClientes.filter(cliente => {
+        // Filtrar por usuario: si no admin, mostrar solo su ruta
+        if (usuarioActual && usuarios[usuarioActual].ruta !== 'all') {
+          if (cliente.ruta !== usuarios[usuarioActual].ruta) return false;
+        }
+
+        // Filtrar por texto buscado
+        if (
+          !cliente.nombre.toLowerCase().includes(textoBuscado) &&
+          !cliente.codigo.includes(textoBuscado) &&
+          !cliente.ruta.includes(textoBuscado)
+        ) {
+          return false;
+        }
+
+        // Filtrar por ruta seleccionada
+        if (rutaSeleccionada && cliente.ruta !== rutaSeleccionada) return false;
+
+        // Filtrar por estado
+        const estadoCliente = estados[cliente.codigo] || 'no-visitado';
+        if (estadoSeleccionado && estadoCliente !== estadoSeleccionado) return false;
+
+        return true;
+      });
+
+      clienteFiltrados.forEach(cliente => {
         const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${cliente.nombre}</td>
-          <td>${cliente.codigo}</td>
-          <td>${cliente.ruta}</td>
-          <td><a href="${cliente.ubicacion}" target="_blank">Ver mapa</a></td>
-          <td class="edit-cell">
-            <span class="requerimiento-text">${requerimientoCliente}</span>
-            ${puedeEditar ? '<span class="edit-icon" title="Editar">✎</span>' : ''}
-          </td>
-          <td>${cliente.imagen && cliente.imagen !== 'falta' ? `<img src="${cliente.imagen}" alt="Imagen" width="50" height="50" style="border-radius: 8px;" />` : 'No hay imagen'}</td>
-          <td>
-            <button class="estado-btn ${estadoCliente === 'visitado' ? 'visitado' : 'no-visitado'}" data-codigo="${cliente.codigo}" ${puedeEditar ? '' : 'disabled'}>
-              ${estadoCliente === 'visitado' ? 'Visitado' : 'No visitado'}
-            </button>
-          </td>
-        `;
+
+        // Nombre
+        const tdNombre = document.createElement('td');
+        tdNombre.textContent = cliente.nombre;
+        tr.appendChild(tdNombre);
+
+        // Código
+        const tdCodigo = document.createElement('td');
+        tdCodigo.textContent = cliente.codigo;
+        tr.appendChild(tdCodigo);
+
+        // Ruta
+        const tdRuta = document.createElement('td');
+        tdRuta.textContent = cliente.ruta;
+        tr.appendChild(tdRuta);
+
+        // Ubicación (link)
+        const tdUbicacion = document.createElement('td');
+        if (cliente.ubicacion && cliente.ubicacion !== 'falta' && cliente.ubicacion !== 'fatla' && cliente.ubicacion !== 'fata') {
+          const a = document.createElement('a');
+          a.href = cliente.ubicacion;
+          a.target = '_blank';
+          a.textContent = 'Ver';
+          tdUbicacion.appendChild(a);
+        } else {
+          tdUbicacion.textContent = 'Sin ubicación';
+        }
+        tr.appendChild(tdUbicacion);
+
+        // Requerimientos (editable)
+        const tdReq = document.createElement('td');
+        tdReq.className = 'edit-cell';
+        const reqActual = requerimientos[cliente.codigo] || cliente.requerimientos || '';
+        const spanReq = document.createElement('span');
+        spanReq.className = 'req-text';
+        spanReq.textContent = reqActual === '' ? 'Sin requerimientos' : reqActual;
+        tdReq.appendChild(spanReq);
+
+        const editIcon = document.createElement('span');
+        editIcon.className = 'edit-icon';
+        editIcon.title = 'Editar';
+        editIcon.innerHTML = '&#9998;';
+
+        // Si no está logueado o usuario sin permisos, deshabilitar edición
+        if (!usuarioActual || (usuarios[usuarioActual].ruta !== 'all' && cliente.ruta !== usuarios[usuarioActual].ruta)) {
+          editIcon.classList.add('disabled');
+        }
+
+        tdReq.appendChild(editIcon);
+        tr.appendChild(tdReq);
+
+        // Imagen
+        const tdImg = document.createElement('td');
+        if (cliente.imagen && cliente.imagen !== 'falta') {
+          const img = document.createElement('img');
+          img.src = cliente.imagen;
+          img.alt = cliente.nombre;
+          img.width = 60;
+          img.height = 60;
+          tdImg.appendChild(img);
+        } else {
+          tdImg.textContent = 'Sin imagen';
+        }
+        tr.appendChild(tdImg);
+
+        // Estado (botón)
+        const tdEstado = document.createElement('td');
+        const btnEstado = document.createElement('button');
+        const estadoCliente = estados[cliente.codigo] || 'no-visitado';
+        btnEstado.className = 'estado-btn ' + estadoCliente;
+        btnEstado.textContent = estadoCliente === 'visitado' ? 'Visitado' : 'No visitado';
+
+        // Si no está logueado o usuario sin permisos, deshabilitar botón
+        if (!usuarioActual || (usuarios[usuarioActual].ruta !== 'all' && cliente.ruta !== usuarios[usuarioActual].ruta)) {
+          btnEstado.disabled = true;
+          btnEstado.style.opacity = '0.5';
+          btnEstado.style.cursor = 'not-allowed';
+        }
+
+        tdEstado.appendChild(btnEstado);
+        tr.appendChild(tdEstado);
 
         tbody.appendChild(tr);
 
-        if (puedeEditar) {
-          const editIcon = tr.querySelector('.edit-icon');
-          if(editIcon) {
-            editIcon.addEventListener('click', () => {
-              editarRequerimiento(cliente.codigo, tr);
+        // Evento para editar requerimiento
+        editIcon.addEventListener('click', () => {
+          if (editIcon.classList.contains('disabled')) return;
+
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.className = 'edit-input';
+          input.value = requerimientos[cliente.codigo] || cliente.requerimientos || '';
+          tdReq.innerHTML = '';
+          tdReq.appendChild(input);
+          input.focus();
+
+          input.addEventListener('blur', () => {
+            const nuevoReq = input.value.trim();
+            requerimientos[cliente.codigo] = nuevoReq;
+            localStorage.setItem('requerimientosClientes', JSON.stringify(requerimientos));
+            guardarRequerimientoFirebase(cliente.codigo, nuevoReq); // Guardar en Firebase
+
+            tdReq.innerHTML = `
+              <span class="req-text">${nuevoReq === '' ? 'Sin requerimientos' : nuevoReq}</span>
+              <span class="edit-icon" title="Editar">&#9998;</span>
+            `;
+            const nuevoEditIcon = tdReq.querySelector('.edit-icon');
+            if (!usuarioActual || (usuarios[usuarioActual].ruta !== 'all' && cliente.ruta !== usuarios[usuarioActual].ruta)) {
+              nuevoEditIcon.classList.add('disabled');
+            }
+            nuevoEditIcon.addEventListener('click', () => {
+              if (!nuevoEditIcon.classList.contains('disabled')) {
+                input.focus();
+              }
             });
-          }
-
-          const btnEstado = tr.querySelector('.estado-btn');
-          btnEstado.addEventListener('click', () => {
-            cambiarEstado(cliente.codigo, btnEstado);
           });
-        }
+        });
+
+        // Evento para cambiar estado
+        btnEstado.addEventListener('click', () => {
+          if (btnEstado.disabled) return;
+          const nuevoEstado = estados[cliente.codigo] === 'visitado' ? 'no-visitado' : 'visitado';
+          estados[cliente.codigo] = nuevoEstado;
+          localStorage.setItem('estadosClientes', JSON.stringify(estados));
+          guardarEstadoFirebase(cliente.codigo, nuevoEstado); // Guardar en Firebase
+
+          btnEstado.className = 'estado-btn ' + nuevoEstado;
+          btnEstado.textContent = nuevoEstado === 'visitado' ? 'Visitado' : 'No visitado';
+        });
       });
     }
 
-    function cambiarEstado(codigo, boton) {
-      const nuevoEstado = boton.classList.contains('visitado') ? 'no-visitado' : 'visitado';
-      estados[codigo] = nuevoEstado;
-      boton.textContent = nuevoEstado === 'visitado' ? 'Visitado' : 'No visitado';
-      boton.classList.toggle('visitado');
-      boton.classList.toggle('no-visitado');
-      guardarEstadoFirebase(codigo, nuevoEstado);
-      localStorage.setItem('estados', JSON.stringify(estados));
-    }
-
-    function editarRequerimiento(codigo, fila) {
-      const td = fila.querySelector('.edit-cell');
-      const span = td.querySelector('.requerimiento-text');
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.value = span.textContent;
-      input.className = 'edit-input';
-      td.innerHTML = '';
-      td.appendChild(input);
-      input.focus();
-
-      input.addEventListener('blur', () => {
-        const nuevoReq = input.value.trim();
-        requerimientos[codigo] = nuevoReq;
-        guardarRequerimientoFirebase(codigo, nuevoReq);
-        localStorage.setItem('requerimientos', JSON.stringify(requerimientos));
-        td.innerHTML = `<span class="requerimiento-text">${nuevoReq}</span><span class="edit-icon" title="Editar">✎</span>`;
-        td.querySelector('.edit-icon').addEventListener('click', () => editarRequerimiento(codigo, fila));
-      });
-
-      input.addEventListener('keydown', (e) => {
-        if(e.key === 'Enter') {
-          input.blur();
-        }
-      });
-    }
-
-    function filtrarClientes() {
-      let filtro = buscador.value.toLowerCase();
-      let ruta = filtroRuta.value;
-      let estadoFiltro = filtroEstado.value;
-
-      let filtrados = todosLosClientes.filter(c => {
-        let textoConcat = c.nombre.toLowerCase() + c.codigo + c.ruta;
-        let coincideTexto = textoConcat.includes(filtro);
-        let coincideRuta = ruta ? c.ruta === ruta : true;
-        let estadoCliente = estados[c.codigo] || 'no-visitado';
-        let coincideEstado = estadoFiltro ? estadoCliente === estadoFiltro : true;
-        return coincideTexto && coincideRuta && coincideEstado;
-      });
-      renderClientes(filtrados);
-    }
-
-    function puedeEditarCliente(rutaCliente) {
-      if (!usuarioActual) return false;
-      if (usuarios[usuarioActual].ruta === 'all') return true;
-      return usuarios[usuarioActual].ruta === rutaCliente;
-    }
-
+    // Funciones para autenticación simple
     function mostrarLogin() {
       loginModal.style.display = 'block';
       logoutBtn.style.display = 'none';
@@ -368,9 +414,9 @@
       logoutBtn.style.display = 'inline-block';
     }
 
-    loginBtn.addEventListener('click', () => {
+    function login() {
       const user = loginUser.value.trim();
-      const pass = loginPass.value.trim();
+      const pass = loginPass.value;
 
       if (usuarios[user] && usuarios[user].password === pass) {
         usuarioActual = user;
@@ -380,44 +426,47 @@
       } else {
         alert('Usuario o contraseña incorrectos');
       }
-    });
+    }
 
-    logoutBtn.addEventListener('click', () => {
+    function logout() {
       usuarioActual = null;
       localStorage.removeItem('usuarioActual');
-      estados = {};
-      requerimientos = {};
-      localStorage.removeItem('estados');
-      localStorage.removeItem('requerimientos');
       mostrarLogin();
-      renderClientes([]);
-    });
-
-    // Carga datos desde Firebase y luego inicia la app
-    async function iniciarApp() {
-      estados = await cargarEstadosFirebase();
-      requerimientos = await cargarRequerimientosFirebase();
-
-      // Para compatibilidad con localStorage, si quieres mantener:
-      // let estadosLocal = JSON.parse(localStorage.getItem('estados') || '{}');
-      // let requerimientosLocal = JSON.parse(localStorage.getItem('requerimientos') || '{}');
-      // estados = {...estadosLocal, ...estados};
-      // requerimientos = {...requerimientosLocal, ...requerimientos};
-
-      if (!usuarioActual) {
-        mostrarLogin();
-      } else {
-        ocultarLogin();
-        filtrarClientes();
-      }
+      filtrarClientes();
     }
+
+    // Eventos
+    loginBtn.addEventListener('click', login);
+    logoutBtn.addEventListener('click', logout);
 
     buscador.addEventListener('input', filtrarClientes);
     filtroRuta.addEventListener('change', filtrarClientes);
     filtroEstado.addEventListener('change', filtrarClientes);
 
-    iniciarApp();
+    // Escuchar cambios en Firebase para sincronizar en tiempo real
+    database.ref('estadosClientes').on('value', (snapshot) => {
+      const nuevosEstados = snapshot.val() || {};
+      estados = nuevosEstados;
+      localStorage.setItem('estadosClientes', JSON.stringify(estados));
+      filtrarClientes();
+    });
 
+    database.ref('requerimientosClientes').on('value', (snapshot) => {
+      const nuevosReqs = snapshot.val() || {};
+      requerimientos = nuevosReqs;
+      localStorage.setItem('requerimientosClientes', JSON.stringify(requerimientos));
+      filtrarClientes();
+    });
+
+    // Al cargar la página
+    window.onload = () => {
+      if (!usuarioActual) {
+        mostrarLogin();
+      } else {
+        ocultarLogin();
+      }
+      filtrarClientes();
+    };
   </script>
 </body>
 </html>
